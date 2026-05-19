@@ -4,7 +4,97 @@ const API_URL = "http://localhost:3000/cupom";
 
 async function carregarCupom() {
     // Lista os Cupons
-    const res = await fetch(API_URL);
+    const res = await fetch(API_URL);  // Chama a função Listar
+    // Converte para Jason
+    const cupons = await res.json();
+    // aponta para a tabela de Cupons no HTML
+    const tabela = document.getElementById("tabelaCupons");
+    // Limpa a tabela
+    tabela.innerHTML = "";
+
+    // Adiciona uma Linha de Cupons
+    cupons.forEach(cupom => {
+        const row = document.createElement("tr");
+        const origemCupom = (cupom.codOrigem == "P") ? "Plataforma" : "Loja";
+        const tipoCupom = (cupom.codTipo == "V") ? "Valor"
+                        : (cupom.codTipo == "P") ? "Percentual"
+                        : (cupom.codTipo == "F") ? "Frete Grátis"
+                        : "";
+        const periodoValidade = (new Date (cupom.datInicioValidade)).toLocaleString("pt-BR") +"<br>"+(new Date (cupom.datFimValidade)).toLocaleString("pt-BR");
+
+        const situacao = (cupom.indAtivo == 1 ) ? "Ativo" : "Inativo";
+        row.innerHTML = `
+            <td>${origemCupom}</td>
+            <td>${cupom.codDesconto}</td>
+            <td>${tipoCupom}</td>
+            <td>${periodoValidade}</td>
+            <td>${situacao}</td>
+            <td class="actions">
+            <button onclick="consultarCupom(${cupom.idDesconto})">👁️</button>
+            <button onclick="inativarCupom(${cupom.idDesconto},${cupom.indAtivo})">❌</button>
+            </td>
+        `;
+        tabela.appendChild(row);
+    });
+}
+
+
+// Função Acionada pelo Botão Buscar
+async function buscarCupom() {
+
+
+    // Obtem os Parâmetros de Pesquisa.
+
+    const codCupom =  document.getElementById("inputCodigoBusca").value;
+    const datInicioBusca = document.getElementById("inputDataInicioBusca").value;
+    const datFimBusca = document.getElementById("inputDataFimBusca").value; 
+
+    // Verifica se informou corretamente os padrões de busca.
+
+    // Pelos menos algo tem que ter sido informado.
+    if ( (!codCupom  && !datInicioBusca && !datFimBusca)) {
+        alert("É necessário ao menos informar o Código do Cupom ou as Datas de Início e de Fim de um período a ser buscado");
+        return;
+    }
+
+    // Não pode informar o cupom e uma das outras datas    
+    if (codCupom  && (datInicioBusca || datFimBusca)) {
+        alert("É necessário informar o Código do Cupom ou as Datas de Início e de Fim de um período a ser buscado");
+        return;
+    }
+
+     
+    let url; // Url d Busca
+    
+
+    // se Informou uma das datas
+   
+    if ((datInicioBusca || datFimBusca)) {
+        // tem que informar as Duas Datas
+        if (datInicioBusca && datFimBusca) {
+            if (datInicioBusca < datFimBusca) {
+                // Vai chamar a Pesquisa por Período
+                url = `${API_URL}/buscarIntervalo/${datInicioBusca}/${datFimBusca}`
+
+            } else {
+                alert("A Data de Início deve ser anterior ou igual a Data de Fim do período a ser buscado");
+                return;
+            }
+        } else {
+            alert("É necessário informar as Datas de Início e de Fim de um período a ser buscado");
+            return;
+        }
+    } else { // Informou o código
+        // Vai chamar a Pesquisa por Código
+        url = `${API_URL}/buscarCodigo/${codCupom}`;
+
+    }
+
+
+    // Realiza a consulta
+    const res = await fetch(url, { method: "GET" });
+    // Lista os Cupons
+    
     // Converte para Jason
     const cupons = await res.json();
     // aponta para a tabela de Cupons no HTML
@@ -36,74 +126,17 @@ async function carregarCupom() {
         `;
         tabela.appendChild(row);
     });
+
+
 }
 
 
 
-async function buscarCupom() {
-
-    const codCupom =  document.getElementById("inputCodigoBusca").value;
-    const datInicioBusca = document.getElementById("inputDataInicioBusca").value;
-    const datFimBusca = document.getElementById("inputDataFimBusca").value; 
-
-    // Verifica se informou corretamente os padrões de busca.
-
-
-
-
-    if ((codCupom  && (datInicioBusca || datFimBusca)) ||
-        (!codCupom  && !datInicioBusca && !datFimBusca)) {
-        alert("É necessário informar o Código do Cupom ou as Data de Início e de Fim de um período a ser buscado");
-
-    } else {
-        let url;
-
-        if (codCupom) {
-             url = `${API_URL}/buscarCodigo/${codCupom}`;
-        } else if (datInicioBusca || datFimBusca) {
-            url = `${API_URL}/buscarIntervalo/${datInicioBusca}/${datFimBusca}`
-            
-        }
-        const res = await fetch(url, { method: "GET" });
-        // Lista os Cupons
-        
-        // Converte para Jason
-        const cupons = await res.json();
-        // aponta para a tabela de Cupons no HTML
-        const tabela = document.getElementById("tabelaCupons");
-        // Limpa a tabela
-        tabela.innerHTML = "";
-
-        // Adiciona uma Linha de Cupons
-        cupons.forEach(cupom => {
-            const row = document.createElement("tr");
-            const origemCupom = (cupom.codOrigem == "P") ? "Plataforma" : "Loja";
-            const tipoCupom = (cupom.codTipo == "V") ? "Valor"
-                            : (cupom.codTipo == "P") ? "Percentual"
-                            : (cupom.codTipo == "F") ? "Frete Grátis"
-                            : "";
-            const periodoValidade = (new Date (cupom.datInicioValidade)).toLocaleString("pt-BR") +"<br>"+(new Date (cupom.datFimValidade)).toLocaleString("pt-BR");
-
-            const situacao = (cupom.indAtivo == 1 ) ? "Ativo" : "Inativo";
-            row.innerHTML = `
-                <td>${origemCupom}</td>
-                <td>${cupom.codDesconto}</td>
-                <td>${tipoCupom}</td>
-                <td>${periodoValidade}</td>
-                <td>${situacao}</td>
-                <td class="actions">
-                <button onclick="consultarCupom(${cupom.idDesconto})">👁️</button>
-                <button onclick="inativarCupom(${cupom.idDesconto})">❌</button>
-                </td>
-            `;
-            tabela.appendChild(row);
-        });
-    }
-}
-
+// Função acionada pelo botão Salvar - irá criar um novo Cupom
 
 async function salvarCupom(e) {
-    if (criticaCupom()) {
+
+    if (criticaCupom()) { // Realiza as Críticas
     
         //e.preventDefault();
 
@@ -121,6 +154,7 @@ async function salvarCupom(e) {
         const nomUsuarioLogado = obtemNomeUsuarioLogado();
 
 
+        // Monta o Registro
         const data = {
                     codDesconto : document.getElementById("inputCodigo").value,
                     codNatureza : "C",
@@ -138,7 +172,8 @@ async function salvarCupom(e) {
 
                     datCriacao: datCriacao
         };
-        // Loja
+        // Se for Loja, obter a Loja do Objeto Logado.
+
         if (codOrigem == "L") {
             const idLoja = obtemIdLojaUsuarioLogado();
             data.idLoja = idLoja;
@@ -148,17 +183,36 @@ async function salvarCupom(e) {
         const url =  API_URL;
     
         
-        await fetch(url, {
-                method: metodo,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-        });
+        try {
+            // Simulando uma chamada de API que demora 1 segundo
+            const res = await fetch(url, {
+                        method: metodo,
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data)
+                });
 
-        // Recarrega a Grade a tela
-        ocultarFormulario();
-        carregarCupom();
+            
+            if (res.ok) {
+                    // Recarrega a Grade a tela
+                ocultarFormulario();
+                carregarCupom();
+            } else if (res.status = 401) {
+                const resposta = await res.json();
+                alert("Inclusão não efetuada. " && resposta.erro);
+            } 
+    
+
+        //throw new Error('Erro na requisição');
+       
+        } catch (erro) {
+            alert("Inclusão não efetuada. ", erro,message)
+
+        }
+       
+    }
 }
-}
+
+// Consuta um Cupom Individual
 
 async function consultarCupom(idDesconto) {
 
@@ -208,32 +262,39 @@ async function consultarCupom(idDesconto) {
 
 }
 
-async function inativarCupom(id) {
 
-    if (confirm("Deseja inativar este cupom?")) {
-        const datInativacao = (new Date()).toISOString().slice(0, 19).replace('T', ' ');
-        
-        const idUsuarioLogado = obtemIdLojaUsuarioLogado();
-        const nomUsuarioLogado = obtemNomeUsuarioLogado();
-        
-        const data = {
+// Função que Inativa um cupom.
 
-                    idUsuarioInativacao : idUsuarioLogado,
-                    nomUsuarioInativacao : nomUsuarioLogado,
-                    datInativacao: datInativacao
+async function inativarCupom(id,indAtivo) {
+    if (indAtivo == 1) {
+        if (confirm("Deseja inativar este cupom?")) {
+
+            // Obtem a data/hora e quem está inativando o cupom.
+            const datInativacao = (new Date()).toISOString().slice(0, 19).replace('T', ' ');
+            
+            const idUsuarioLogado = obtemIdLojaUsuarioLogado();
+            const nomUsuarioLogado = obtemNomeUsuarioLogado();
+            
+            const data = {
+
+                        idUsuarioInativacao : idUsuarioLogado,
+                        nomUsuarioInativacao : nomUsuarioLogado,
+                        datInativacao: datInativacao
+            }
+            const metodo = "DELETE"
+            const url =  `${API_URL}/${id}`;
+
+                await fetch(url, {
+                    method: metodo,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+            });
+            carregarCupom();
         }
-        const metodo = "DELETE"
-        const url =  `${API_URL}/${id}`;
-
-        //await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-
-        await fetch(url, {
-                method: metodo,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-        });
-        carregarCupom();
+    } else {
+        alert("Este cupom já está inativado!")
     }
+
 }
 
 
@@ -245,7 +306,8 @@ function visualizarCupom() {
     document.getElementById("btnRetornarCupom").hidden = false;
     document.getElementById("divAtivo").classList.replace("col-md-3", "col-md-6");
 
-   
+
+    // Desabilita os campos de edição da tela
     document.getElementById("inputCodigo").disabled = true;
     document.getElementById("inlineRadioPercentual").disabled = true;
     document.getElementById("inlineRadioValor").disabled = true;
@@ -255,14 +317,16 @@ function visualizarCupom() {
     document.getElementById("inputDataInicio").disabled = true;
     document.getElementById("inputDataFim").disabled = true;
     document.getElementById("inputObservacao").disabled = true;
-
-
-    return;
+    
 }
 
+
+// Prepara o Formulário para ser Editável.
 function criarCupom() {
     document.getElementById("lblNovoCupom").hidden = false;
     document.getElementById("lblVisualizarCupom").hidden = true;
+
+    // Habilita os campos de edição da tela
 
     document.getElementById("inputCodigo").disabled = false;
     document.getElementById("inlineRadioPercentual").disabled = false;
@@ -274,8 +338,6 @@ function criarCupom() {
     document.getElementById("inputDataFim").disabled = false;
     document.getElementById("inputObservacao").disabled = false;
 
-
-
     document.getElementById("btnCancelarCupom").hidden = false;
     document.getElementById("btnSalvarCupom").hidden = false;
     document.getElementById("btnRetornarCupom").hidden = true;
@@ -283,38 +345,33 @@ function criarCupom() {
 
     // Marca o Tipo de Desconto Percentual como "Default"
 
-
     document.getElementById("inlineRadioPercentual").checked = true;
     exibeTipoDesconto("P");
-
-
-
-
 }       
 
+// Exibe ou oculta os campos de Valor ou de Percentual, de acordo com o Tipo do Desconto.
 function exibeTipoDesconto(tipoDesconto) {
     document.getElementById("divPercentual").hidden = (tipoDesconto != "P");
 
     document.getElementById("divValor").hidden = (tipoDesconto != "V");
-
 }
 
 
 // Oculta a área de lista e exibe a área de Formulário
 function exibirFormulario() {
 
-document.getElementById("areaEdicao").hidden = false
-document.getElementById("areaLista").hidden = true
+    document.getElementById("areaEdicao").hidden = false
+    document.getElementById("areaLista").hidden = true
 }
 
 
 // Oculta a área de formulário e exibe a área de lista
 function ocultarFormulario() {
-document.getElementById("areaEdicao").hidden = true
-document.getElementById("areaLista").hidden = false
+    document.getElementById("areaEdicao").hidden = true
+    document.getElementById("areaLista").hidden = false
 }
 
-
+// Limpa os valores dos Inputs dos campos do Formuário.
 function limparCamposFormulario() {
     document.getElementById("idDesconto").value = 0;
     document.getElementById("inlineRadioLoja").checked = false;
@@ -338,6 +395,8 @@ function limparCamposFormulario() {
 
 }
 
+
+// Marca o Rádio Button de Plataforma ou de Loja.
 function selecionarOrigem(codOrigem) {
 
 // Loja ou Plataforma
@@ -351,25 +410,23 @@ function selecionarOrigem(codOrigem) {
 }
 
 
-
+// Função chama 
 function novoCupom() {
-
-
-    console.log("ENtrou na novo Cupom");
+   
     limparCamposFormulario();
-    console.log("Passoi pela limparCamposFormulario");
-    document.getElementById("idDesconto").value = 0;
+
+    document.getElementById("idDesconto").value = 0; // Preciosismo
 
     criarCupom(); 
-      console.log("Passou pelaCriar Cupom");
+
     selecionarOrigem( obtemOrigemUsuarioLogado());
     exibirFormulario();
-       console.log("Passou pela Exibor Formulario");
+    
 }
 
+
+// Efatua as críticas de negócio para criação de cupom
 function criticaCupom() {
-
-
 
     // Testa a Origem do Cupom 
     if ( ! document.getElementById("inlineRadioLoja").checked && ! document.getElementById("inlineRadioPlataforma").checked ) {
@@ -377,21 +434,20 @@ function criticaCupom() {
         return false;
     }
 
+    // Verifica se o código foi Informado
     if (document.getElementById("inputCodigo").value == "") {
         alert("É obrigatório informar um código para o Cupom.");
         return false;
     }
 
-    // Verifica se o código está duplicado
-
-
-
-    
+    // Verifica se o Tipo foi selecionado
     if ( ! document.getElementById("inlineRadioPercentual").checked && ! document.getElementById("inlineRadioValor").checked && ! document.getElementById("inlineRadioFrete").checked ) {
         alert("É obrigatório identificar se é o cupom é Percentual, Valor ou Frete Grátis.");
         return false;
     }
 
+
+    // Verifica se é do Tipo Percentual
     if (document.getElementById("inlineRadioPercentual").checked) {
         if (document.getElementById("inputPercentual").value  == "" ) {
             alert("É obrigatório informar um percentual para cupons do tipo percentual.");
@@ -402,6 +458,13 @@ function criticaCupom() {
             alert("É obrigatório informar um percentual para cupons do tipo percentual.");
             return false;
         }
+        if (percentual > 60) {
+            alert("O valor do percentual não pode exceder os 60%.");
+            return false;
+        }
+
+
+
     }
     
     // Cupom do tipo Valor

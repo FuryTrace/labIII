@@ -25,6 +25,8 @@ exports.obter = async (req, res) => {
   }
 };
 
+
+// Busca os Cupons Like CodiGO
 exports.buscarCupomCodigo = async (req, res) => {
   try {
     const { codCupom } = req.params;
@@ -39,6 +41,7 @@ exports.buscarCupomCodigo = async (req, res) => {
   }
 };
 
+// Busca Cupons de um Intervalo
 
 exports.buscarCupomIntervalo = async (req, res) => {
   try {
@@ -67,8 +70,13 @@ exports.buscarCupomIntervalo = async (req, res) => {
 // Método de Listar todos os cupons
 
 exports.listar = async (req, res) => {
+  // Obtem a Data de Um Ano Atrás
+  const umAnoAtras = new Date();
+  umAnoAtras.setFullYear(umAnoAtras.getFullYear() - 1);
+  // where( 'datInicioValidade','>',  umAnoAtras )
+
   try {
-    const desconto = await db('desconto').orderBy('datInicioValidade');
+    const desconto = await db('desconto').where( 'datInicioValidade','>',  umAnoAtras ).orderBy('datInicioValidade', 'desc');
     res.json(desconto);
   } catch (err) {
     res.status(500).json({ erro: 'Erro ao listar o Cupom' });
@@ -81,6 +89,18 @@ exports.listar = async (req, res) => {
 exports.inserir = async (req, res) => {
   try {
     const { codDesconto,codNatureza,codOrigem,codTipo,valDesconto,perDesconto,datInicioValidade,datFimValidade,obsDesconto,idLoja,idUsuarioCriacao,nomUsuarioCriacao,datCriacao } = req.body;
+    
+
+
+  
+    const desconto = await db("desconto").where( 'codDesconto','=',  codDesconto).first();
+    if (desconto) {
+      return res.status(401).json({ erro: "Já existe um cupom cadastrado com este código" });
+    }
+
+
+    
+    // Prepara para Inclusão
     const camposDesconto = { 
       codDesconto : codDesconto,
       codNatureza : codNatureza,
