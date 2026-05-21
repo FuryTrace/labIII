@@ -142,7 +142,7 @@ exports.inativar = async (req, res) => {
     const { idDesconto } = req.params;
     const { idUsuarioInativacao, nomUsuarioInativacao, datInativacao } = req.body;
     
-    await db('desconto').where({ idDesconto }).update({ indAtivo : 0, idUsuarioInativacao : nomUsuarioInativacao, nomUsuarioInativacao : idUsuarioInativacao,datInativacao : datInativacao });
+    await db('desconto').where({ idDesconto }).update({ indAtivo : 0, idUsuarioInativacao : idUsuarioInativacao, nomUsuarioInativacao : nomUsuarioInativacao,datInativacao : datInativacao });
     res.json({ mensagem: 'Cupom inativado com sucesso' });
   } catch (err) {
     console.error('Erro ao atualizar:', err.message);
