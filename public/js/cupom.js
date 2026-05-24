@@ -4,7 +4,13 @@ const API_URL = "http://localhost:3000/cupom";
 
 async function carregarCupom() {
     // Lista os Cupons
-    const res = await fetch(API_URL);  // Chama a função Listar
+
+    const rotaUsuarioLogado = obtemRotaUsuarioLogado();
+
+    const url = `${API_URL}/listar`+rotaUsuarioLogado;
+
+    const res = await fetch(url);  // Chama a função Listar
+
     // Converte para Jason
     const cupons = await res.json();
     // aponta para a tabela de Cupons no HTML
@@ -48,7 +54,10 @@ async function buscarCupom() {
     const codCupom =  document.getElementById("inputCodigoBusca").value;
     const datInicioBusca = document.getElementById("inputDataInicioBusca").value;
     const datFimBusca = document.getElementById("inputDataFimBusca").value; 
+ 
 
+    const rotaUsuarioLogado = obtemRotaUsuarioLogado();
+  
     // Verifica se informou corretamente os padrões de busca.
 
     // Pelos menos algo tem que ter sido informado.
@@ -74,7 +83,7 @@ async function buscarCupom() {
         if (datInicioBusca && datFimBusca) {
             if (datInicioBusca < datFimBusca) {
                 // Vai chamar a Pesquisa por Período
-                url = `${API_URL}/buscarIntervalo/${datInicioBusca}/${datFimBusca}`
+                url = `${API_URL}/buscarIntervalo/${datInicioBusca}/${datFimBusca}`+rotaUsuarioLogado;
 
             } else {
                 alert("A Data de Início deve ser anterior ou igual a Data de Fim do período a ser buscado");
@@ -86,13 +95,19 @@ async function buscarCupom() {
         }
     } else { // Informou o código
         // Vai chamar a Pesquisa por Código
-        url = `${API_URL}/buscarCodigo/${codCupom}`;
+        url = `${API_URL}/buscarCodigo/${codCupom}`+rotaUsuarioLogado;
 
     }
 
 
     // Realiza a consulta
     const res = await fetch(url, { method: "GET" });
+
+    if (res.status== 404) {
+        alert("Não foram encontrados cupons para os critérios informados.");
+        return;
+
+    }
     // Lista os Cupons
     
     // Converte para Jason
@@ -220,6 +235,8 @@ async function consultarCupom(idDesconto) {
     const res = await fetch(`${API_URL}/${idDesconto}`, { method: "GET" });
     const cupom = await res.json();
 
+    console.log(cupom);
+
     document.getElementById("idDesconto").value = idDesconto;
     document.getElementById("inputCodigo").value = cupom.codDesconto;
 
@@ -243,6 +260,13 @@ async function consultarCupom(idDesconto) {
     document.getElementById("inputDataInicio").value = cupom.datInicioValidade.toLocaleString('pt-BR').replace(' ', 'T').substring(0, 16);
     document.getElementById("inputDataFim").value = cupom.datFimValidade.toLocaleString('pt-BR').replace(' ', 'T').substring(0, 16);
     document.getElementById("inputObservacao").value = cupom.obsDesconto;
+    document.getElementById("inputQtdUtilizado").value = cupom.qtdDescontoUtilizado;
+    document.getElementById("inputValorUtilizado").value = cupom.valDescontoUtilizado;
+
+
+    inputValorUtilizado
+
+
     document.getElementById("ckBoxInativo").checked = ( cupom.indAtivo == 0) ;
     document.getElementById("inputCriadoPor").value = cupom.nomUsuarioCriacao;
     if (cupom.datCriacao != null) {
@@ -317,6 +341,8 @@ function visualizarCupom() {
     document.getElementById("inputDataInicio").disabled = true;
     document.getElementById("inputDataFim").disabled = true;
     document.getElementById("inputObservacao").disabled = true;
+
+    document.getElementById("areaControle").hidden = false;
     
 }
 
@@ -347,6 +373,7 @@ function criarCupom() {
 
     document.getElementById("inlineRadioPercentual").checked = true;
     exibeTipoDesconto("P");
+    document.getElementById("areaControle").hidden = true;
 }       
 
 // Exibe ou oculta os campos de Valor ou de Percentual, de acordo com o Tipo do Desconto.
@@ -555,7 +582,17 @@ function obtemIdLojaUsuarioLogado() {
     return usuarioLogado.idLoja;
 }
 
-
+function obtemRotaUsuarioLogado() {
+    const usuarioLogado = obterUsuarioLogado();
+  
+    if (usuarioLogado.tipo == "Plataforma") {
+        return "/P/0";
+    } else if (usuarioLogado.tipo == "Loja") { // Loja
+        return "/L/"+usuarioLogado.idLoja;
+    } else {
+        return "";
+    }
+}
 
 
 

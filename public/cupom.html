@@ -22,7 +22,7 @@
                         <input type="text" class="form-control" id="inputCodigoBusca"  placeholder="Código do Cupom">
                     </div>
                     <div class="col-md-3 align-self-end">
-                        <button onclick="buscarCupom()" class="btn btn-outline-secondary w-100">🔍 Buscar</button>
+                        <button onclick="buscarCupom()" class="btn btn-primary w-100">🔍 Buscar</button>
                     </div>
                 </div>
 
@@ -38,7 +38,7 @@
                 </div>
 
                 <div class="d-flex justify-content-end">
-                    <button type="button" onclick="novoCupom()"class="btn btn-primary px-4">+ Criar Cupom</button>
+                    <button type="button" onclick="novoCupom()"class="btn btn-success px-4">+ Criar Cupom</button>
                     
                 </div>
 
@@ -88,7 +88,7 @@
 
 
 
-        <div id="areaEdicao" hidden>   <!-- Incluir o Hidden -->
+        <div id="areaEdicao" class ="mb-3" hidden>   <!-- Incluir o Hidden -->
             <input type="hidden" id="idDesconto" />
             <div>
                 <h2 class="h2" id="lblNovoCupom">Novo Cupom</h2>
@@ -96,111 +96,147 @@
 
                 <hr>
             </div>
+            <div class="card border-0 shadow-sm p-4">
 
-            <!-- Área de Origem do Cupom -->
-            <div>
-                <h5 class="h5 mb-0 text-dark">Origem</h5>
-            </div>
-            <div class="form-check form-check-inline col-md-2">
-                <input class="form-check-input" type="radio" name="inlineRadioOrigem" id="inlineRadioPlataforma" value="P" disabled>
-                <label class="form-check-label" for="inlineRadioPlataforma">Plataforma</label>
-            </div>
-            <div class="form-check form-check-inline col-md-2">
-                <input class="form-check-input" type="radio" name="inlineRadioOrigem" id="inlineRadioLoja" value="L" disabled>
-                <label class="form-check-label" for="inlineRadioLoja">Loja</label>
-            </div>
-
-            <div class="col-md-9">
-                <label for="inputCodigo" class="form-label">Código</label>
-                <input type="text" class="form-control" id="inputCodigo"  placeholder="Código do Cupom">
-            </div>
-
-            <!-- Área de Tipo de Desconto: Percentual, Valor ou Frete Grátis -->
-
-            <div>
-                <h5 class="h5 mb-0 text-dark">Tipo de Desconto</h5>
-            </div>
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" onclick="exibeTipoDesconto('P')" type="radio" name="inlineRadioTipo" id="inlineRadioPercentual" value="P">
-                        <label class="form-check-label" for="inlineRadioPercentual">Percentual %</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" onclick="exibeTipoDesconto('V')" type="radio" name="inlineRadioTipo" id="inlineRadioValor" value="V">
-                        <label class="form-check-label" for="inlineRadioValor">Valor</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" onclick="exibeTipoDesconto('F')" type="radio" name="inlineRadioTipo" id="inlineRadioFrete" value="F">
-                        <label class="form-check-label" for="inlineRadioFrete">Frete grátis</label>
+                <!-- Área de Origem do Cupom -->
+                <div>
+                    <br>
+                    <h5 class="h5 mb-0 text-dark">Origem</h5>
+                    <br>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="inlineRadioOrigem" id="inlineRadioPlataforma" value="P" disabled>
+                            <label class="form-check-label" for="inlineRadioPlataforma">Plataforma</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="inlineRadioOrigem" id="inlineRadioLoja" value="L" disabled>
+                            <label class="form-check-label" for="inlineRadioLoja">Loja</label>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-md-2" id="divPercentual">
-                    <label for="inputPercentual" class="form-label" id="labelPercentual">Percentual do Desconto</label>
-                    <input type="text" class="form-control" id="inputPercentual">
-                </div>
+                <!-- Código do Cupom do Cupom -->
 
-                <div class="col-md-2" id="divValor" >
-                    <label for="inputValor" class="form-label" id="labelValor">Valor do Desconto</label>
-                    <input type="text" class="form-control" id="inputValor">
-                </div>
-            </div>
-            <div>
-                <h5 class="h5 mb-0 text-dark">Período</h5>
-            </div>
-
-            <div class="row">
-                <div class="col-md-3">
-                    <label for="inputDataInicio" class="form-label">Data de Início</label>
-                    <input type="datetime-local" class="form-control" id="inputDataInicio">
-                </div>
-                <div class="col-md-3">
-                    <label for="inputDataFim" class="form-label">Data de Fim</label>
-                    <input type="datetime-local" class="form-control" id="inputDataFim">
-                </div>
-            </div>
-            <div class="col-md-9">
-                <label for="inputObservacao" class="form-label">Observação</label>
-                <textarea class="form-control" id="inputObservacao" rows="3"></textarea>
-            </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <label for="inputCriadoPor" class="form-label">Criado Por</label>
-                    <input type="text" class="form-control" id="inputCriadoPor" disabled>
-                </div>
-                <div class="col-md-3">
-                    <label for="inputDataCriacao" class="form-label">Data de Criação</label>
-                    <input type="datetime-local" class="form-control" id="inputDataCriacao" disabled>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <label for="inputInativadoPor" class="form-label">Inativado Por</label>
-                    <input type="text" class="form-control" id="inputInativadoPor" disabled>
-                </div>
-                <div class="col-md-3">
-                    <label for="inputDataInativacao" class="form-label">Data de Inativação</label>
-                    <input type="datetime-local" class="form-control" id="inputDataInativacao" disabled>
-                </div>
-            </div>
-            <hr>
-            <div class="row">
-                <div class="form-check col-md-3" id="divAtivo">
-                    <input class="form-check-input" type="checkbox" value="0" id="ckBoxInativo" disabled>
-                    <label class="form-check-label" for="ckBoxInativo">Inativo</label>
-                </div>
                 
-                <div id="btnCancelarCupom" class="col-md-3">
-                    <button onclick="ocultarFormulario()" class="btn btn-secondary w-100">Cancelar</button>
-               
-                </div>
-                <div id="btnSalvarCupom"  class="col-md-3">
-                    <button onclick="salvarCupom()" class="btn btn-primary w-100">Salvar</button>
 
+                <div class="col-md-9">
+                    <label for="inputCodigo" class="form-label">Código</label>
+                    <input type="text" class="form-control" id="inputCodigo"  placeholder="Código do Cupom">
                 </div>
-                <div  id="btnRetornarCupom" class="col-md-3" hidden>
-                    <button  onclick="ocultarFormulario()" class="btn btn-primary w-100">Retornar</button>
+                <div class="col-md-9">
+                    <label for="inputObservacao" class="form-label">Observação</label>
+                    <textarea class="form-control" id="inputObservacao" rows="3"></textarea>
+                </div>
+
+                <!-- Área de Tipo de Desconto: Percentual, Valor ou Frete Grátis -->
+
+                <div>
+                    <br>
+                    <h5 class="h5 mb-0 text-dark">Tipo de Desconto</h5>
+                    
+                </div>
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" onclick="exibeTipoDesconto('P')" type="radio" name="inlineRadioTipo" id="inlineRadioPercentual" value="P">
+                            <label class="form-check-label" for="inlineRadioPercentual">Percentual %</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" onclick="exibeTipoDesconto('V')" type="radio" name="inlineRadioTipo" id="inlineRadioValor" value="V">
+                            <label class="form-check-label" for="inlineRadioValor">Valor</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" onclick="exibeTipoDesconto('F')" type="radio" name="inlineRadioTipo" id="inlineRadioFrete" value="F">
+                            <label class="form-check-label" for="inlineRadioFrete">Frete grátis</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2" id="divPercentual">
+                        <label for="inputPercentual" class="form-label" id="labelPercentual">Percentual do Desconto</label>
+                        <input type="text" class="form-control" id="inputPercentual">
+                    </div>
+
+                    <div class="col-md-2" id="divValor" >
+                        <label for="inputValor" class="form-label" id="labelValor">Valor do Desconto</label>
+                        <input type="text" class="form-control" id="inputValor">
+                    </div>
+                </div>
+                <div>
+                    <br>
+                    <h5 class="h5 mb-0 text-dark">Período</h5>
+                    <br>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="inputDataInicio" class="form-label">Data de Início</label>
+                        <input type="datetime-local" class="form-control" id="inputDataInicio">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="inputDataFim" class="form-label">Data de Fim</label>
+                        <input type="datetime-local" class="form-control" id="inputDataFim">
+                    </div>
+                </div>
+
+
+                <div id="areaControle">
+
+                    <div>
+                        <br>
+                        <h5 class="h5 mb-0 text-dark">Controle</h5>
+                        <br>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="inputQtdUtilizado" class="form-label">Quantidade Utilizada</label>
+                            <input type="text" class="form-control" id="inputQtdUtilizado" disabled>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="inputValorUtilizado" class="form-label">Valor Utilizado</label>
+                            <input type="text" class="form-control" id="inputValorUtilizado" disabled>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="inputCriadoPor" class="form-label">Criado Por</label>
+                            <input type="text" class="form-control" id="inputCriadoPor" disabled>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="inputDataCriacao" class="form-label">Data de Criação</label>
+                            <input type="datetime-local" class="form-control" id="inputDataCriacao" disabled>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="inputInativadoPor" class="form-label">Inativado Por</label>
+                            <input type="text" class="form-control" id="inputInativadoPor" disabled>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="inputDataInativacao" class="form-label">Data de Inativação</label>
+                            <input type="datetime-local" class="form-control" id="inputDataInativacao" disabled>
+                        </div>
+                    </div>
+                </div> <!-- Fim da área de Controle-->
+                <hr>
+                <div class="row">
+                    <div class="form-check col-md-3" id="divAtivo">
+                        <input class="form-check-input" type="checkbox" value="0" id="ckBoxInativo" disabled>
+                        <label class="form-check-label" for="ckBoxInativo">Inativo</label>
+                    </div>
+                    
+                    <div id="btnCancelarCupom" class="col-md-3">
+                        <button onclick="ocultarFormulario()" class="btn btn-secondary w-100">Cancelar</button>
+                
+                    </div>
+                    <div id="btnSalvarCupom"  class="col-md-3">
+                        <button onclick="salvarCupom()" class="btn btn-primary w-100">Salvar</button>
+
+                    </div>
+                    <div  id="btnRetornarCupom" class="col-md-3" hidden>
+                        <button  onclick="ocultarFormulario()" class="btn btn-primary w-100">Retornar</button>
+                    </div>
                 </div>
             </div>
         </div> <!-- Fim da Área de Edição -->

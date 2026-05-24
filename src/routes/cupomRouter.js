@@ -25,10 +25,10 @@ const controller = require('../controllers/cupomController');
 
 */
 
-router.get('/buscarCodigo/:codCupom', controller.buscarCupomCodigo);
-router.get('/buscarIntervalo/:datInicioBusca/:datFimBusca', controller.buscarCupomIntervalo);
+router.get('/buscarCodigo/:codCupom/:codOrigem/:idLoja?', controller.buscarCupomCodigo);
+router.get('/buscarIntervalo/:datInicioBusca/:datFimBusca/:codOrigem/:idLoja?', controller.buscarCupomIntervalo);
 
-router.get('/', controller.listar);
+router.get('/listar/:codOrigem/:idLoja?', controller.listar);
 router.get('/:idDesconto', controller.obter);
 
 router.post('/', controller.inserir);

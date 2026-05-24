@@ -14,11 +14,41 @@ const db = require('../db/knex');
 
 exports.obter = async (req, res) => {
   try {
-    const { idDesconto } = req.params;
+    const { idDesconto} = req.params;
+
     const desconto = await db("desconto").where({ idDesconto: req.params.idDesconto }).first();
     if (!desconto) {
       return res.status(404).json({ erro: "Cupom não encontrado" });
     }
+
+    // Obtem o somatório e qtd de uso do Cupom
+
+    const descontoPedido = await db("descontopedido")
+                                .sum('valDesconto as totDesconto')
+                                .count('* as qtdDesconto')
+                                .where('idDesconto',idDesconto)
+                                .first();
+
+    // se encontrou valores, então adiciona ao registro do Desconto. 
+                             
+    if (descontoPedido) {
+        const { totDesconto, qtdDesconto } = descontoPedido;
+        if (totDesconto) {  // Trata a cláusula Sum
+            desconto.valDescontoUtilizado = totDesconto;
+            desconto.qtdDescontoUtilizado = qtdDesconto;
+
+        } else {
+            desconto.valDescontoUtilizado = 0;
+            desconto.qtdDescontoUtilizado = qtdDesconto;
+        }
+    } else {
+        desconto.valDescontoUtilizado = 0;
+        desconto.qtdDescontoUtilizado = 0;
+    }
+    
+
+
+
     res.json(desconto);
   } catch (error) {
     res.status(500).json({ erro: "Erro ao buscar o Cupom" });
@@ -26,12 +56,27 @@ exports.obter = async (req, res) => {
 };
 
 
-// Busca os Cupons Like CodiGO
+// Busca os Cupons Like Codigo
+
 exports.buscarCupomCodigo = async (req, res) => {
   try {
-    const { codCupom } = req.params;
+    const { codCupom, codOrigem, idLoja  } = req.params;
+
     const whereLike = codCupom +"%";
-    const desconto = await db("desconto").where( 'codDesconto','like',  whereLike ).orderBy('datInicioValidade');;
+    let desconto;
+    if (codOrigem == "P") { // Plataforma
+        desconto = await db("desconto")
+                        .where( 'codDesconto','like',  whereLike )
+                        .where ('codOrigem','P')
+                        .orderBy('datInicioValidade');
+    } else if (codOrigem == "L") { // Loja
+        desconto = await db("desconto")
+                        .where( 'codDesconto','like',  whereLike )
+                        .where ('codOrigem','L')
+                        .where('idLoja',idLoja)
+                        .orderBy('datInicioValidade');
+
+    }
     if (desconto.length === 0) {
       return res.status(404).json({ erro: "Cupom não encontrado" });
     }
@@ -44,43 +89,82 @@ exports.buscarCupomCodigo = async (req, res) => {
 // Busca Cupons de um Intervalo
 
 exports.buscarCupomIntervalo = async (req, res) => {
-  try {
-    const { datInicioBusca, datFimBusca } = req.params;
-    console.log(datInicioBusca);
-    console.log(datFimBusca);
+    try {
+        const { datInicioBusca, datFimBusca,codOrigem, idLoja } = req.params;
+
+        let desconto;
+        if (codOrigem == "P") { // Plataforma
 
 
-    const desconto = await db("desconto")
-    .where(function() {
-        // Primeiro grupo: Data1 entre DataI e DataF
-        this.whereBetween('datInicioValidade', [datInicioBusca, datFimBusca])
-        // Segundo grupo conectado por OU: Data2 entre DataI e DataF
-        .orWhereBetween('datFimValidade', [datInicioBusca, datFimBusca]);
-    });
-    if (desconto.length === 0) {
-      return res.status(404).json({ erro: "Cupom não encontrado" });
+            desconto = await db('desconto')
+                .where(function() {
+                    // Primeiro grupo: Data1 entre DataI e DataF
+                    this.whereBetween('datInicioValidade', [datInicioBusca, datFimBusca])
+                    // Segundo grupo conectado por OU: Data2 entre DataI e DataF
+                    .orWhereBetween('datFimValidade', [datInicioBusca, datFimBusca]);
+                })
+                .andWhere(function() {
+                    this.where('CodOrigem', 'P');
+                });
+        } else if (codOrigem == "L") { // Loja
+            desconto = await db('desconto')
+                .where(function() {
+                    // Primeiro grupo: Data1 entre DataI e DataF
+                    this.whereBetween('datInicioValidade', [datInicioBusca, datFimBusca])
+                    // Segundo grupo conectado por OU: Data2 entre DataI e DataF
+                    .orWhereBetween('datFimValidade', [datInicioBusca, datFimBusca]);
+                })
+                .andWhere(function() {
+                    this.where('CodOrigem', 'L')
+                    .andWhere('idLoja', idLoja);
+                });
+        }
+
+        if (!desconto) {
+            return res.status(404).json({ erro: "Cupom não encontrado" });
+        }
+        res.json(desconto);
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao buscar o Cupom" });
     }
-    res.json(desconto);
-  } catch (error) {
-    res.status(500).json({ erro: "Erro ao buscar o Cupom" });
-  }
 };
 
 
-// Método de Listar todos os cupons
+// Método de Listar todos os cupons com até 1 ano de idade
 
 exports.listar = async (req, res) => {
-  // Obtem a Data de Um Ano Atrás
-  const umAnoAtras = new Date();
-  umAnoAtras.setFullYear(umAnoAtras.getFullYear() - 1);
-  // where( 'datInicioValidade','>',  umAnoAtras )
+    // Obtem a Data de Um Ano Atrás
+    const umAnoAtras = new Date();
+    umAnoAtras.setFullYear(umAnoAtras.getFullYear() - 1);
+    // where( 'datInicioValidade','>',  umAnoAtras )
+
+    const { codOrigem, idLoja  } = req.params;
+    let desconto;
 
   try {
-    const desconto = await db('desconto').where( 'datInicioValidade','>',  umAnoAtras ).orderBy('datInicioValidade', 'desc');
-    res.json(desconto);
-  } catch (err) {
-    res.status(500).json({ erro: 'Erro ao listar o Cupom' });
-  }
+
+
+        if (codOrigem == "P") { // Plataforma
+            desconto = desconto = await db('desconto')
+                    .where( 'datInicioValidade','>',  umAnoAtras )
+                    .where ('codOrigem','P')
+                    .orderBy('datInicioValidade', 'desc');
+        } else if (codOrigem == "L") { // Loja
+            desconto = desconto = await db('desconto')
+                    .where( 'datInicioValidade','>',  umAnoAtras )
+                            .where ('codOrigem','L')
+                            .where('idLoja',idLoja)
+                            .orderBy('datInicioValidade');
+        }
+        if (!desconto) {
+            res.status(404).jason({erro : "Não foram encontrados registros"});
+            return;
+        }
+        // Retorna os registros encontrados
+        res.json(desconto);
+    } catch (err) {
+        res.status(500).json({ erro: 'Erro ao listar o Cupom' });
+    }
 };
 
 
@@ -89,16 +173,11 @@ exports.listar = async (req, res) => {
 exports.inserir = async (req, res) => {
   try {
     const { codDesconto,codNatureza,codOrigem,codTipo,valDesconto,perDesconto,datInicioValidade,datFimValidade,obsDesconto,idLoja,idUsuarioCriacao,nomUsuarioCriacao,datCriacao } = req.body;
-    
-
-
-  
+      
     const desconto = await db("desconto").where( 'codDesconto','=',  codDesconto).first();
     if (desconto) {
       return res.status(401).json({ erro: "Já existe um cupom cadastrado com este código" });
     }
-
-
     
     // Prepara para Inclusão
     const camposDesconto = { 
@@ -125,6 +204,8 @@ exports.inserir = async (req, res) => {
     } else if (codTipo == 'P') {
       camposDesconto.perDesconto = perDesconto;
     }
+
+    // efeutua a inclusão
 
     await db('desconto').insert(camposDesconto);
     res.status(201).json({ mensagem: 'Cupom inserido com sucesso' });
