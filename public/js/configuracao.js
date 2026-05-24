@@ -1,5 +1,7 @@
 const API_URL = "http://localhost:3000/desconto";
 
+// Simulação de uma tabela de Usuários
+
 const usuarios = [
     { id: 1, nome: "João Silva", tipo: "Plataforma"  },
     { id: 2, nome: "Maria Oliveira ", tipo: "Plataforma" },
@@ -10,6 +12,7 @@ const usuarios = [
 
 ];
 
+// Carrega o select de Usuário
 
 function carregarUsuario() {
     const select = document.getElementById('cmbUsuario'); // Seu <select> do HTML
@@ -26,6 +29,7 @@ function carregarUsuario() {
     });
 };
 
+// Salva a configuração de simula qual usuário está logado
 function salvarConfiguracao() {
     const idUsuario = document.getElementById("cmbUsuario").value;
     const usuario = usuarios.find(u => u.id == idUsuario)
@@ -35,6 +39,9 @@ function salvarConfiguracao() {
         localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
     }
 };
+
+
+// Função que chama o método que irá validar o desconto
 
 async function validarDesconto() {
     const codDesconto = document.getElementById("inputCupomVoucher").value;
@@ -57,10 +64,14 @@ async function validarDesconto() {
     //}
 }
 
+// Chama o serviço que Utiliza o Cupom ou o Voucher
+
 async function utilizarDesconto() {
     const idDesconto = document.getElementById("inputIdDesconto").value;
     const idPedido = document.getElementById("inputPedido").value;
     const valDesconto = document.getElementById("inputValor").value;
+
+    // Prepara os Parâmatetros
 
     const data = {
                 idDesconto : idDesconto,
@@ -71,7 +82,7 @@ async function utilizarDesconto() {
     const metodo = "POST"
     const url =  API_URL;
     
-        
+    // Realiza a Chamada do Serviço que Registra o uso dos Cupons ou Vouchers.   
     const res = await fetch(url, {
             method: metodo,
             headers: { "Content-Type": "application/json" },
@@ -82,13 +93,9 @@ async function utilizarDesconto() {
 
     const jsonFormatado = JSON.stringify(resultado, null, 2);
     document.getElementById("areaResposta").value = jsonFormatado;
-
-
-
-
-   
+ 
 }
 
-
+// Chama rotina que carrega o combo de Usuários.
 
 carregarUsuario();

@@ -2,7 +2,7 @@ const API_URL = "http://localhost:3000/cupom";
 
 //import { obterUsuarioLogado } from './servicoUsuario.js';
 
-async function carregarCupom() {
+async function listarCupom() {
     // Lista os Cupons
 
     const rotaUsuarioLogado = obtemRotaUsuarioLogado();
@@ -210,7 +210,7 @@ async function salvarCupom(e) {
             if (res.ok) {
                     // Recarrega a Grade a tela
                 ocultarFormulario();
-                carregarCupom();
+                listarCupom();
             } else if (res.status = 401) {
                 const resposta = await res.json();
                 alert("Inclusão não efetuada. " && resposta.erro);
@@ -280,7 +280,7 @@ async function consultarCupom(idDesconto) {
     }
 
    
-    visualizarCupom(); 
+    prepararFormularioVisualizarCupom(); 
     exibeTipoDesconto(cupom.codTipo);
     exibirFormulario();
 
@@ -313,7 +313,7 @@ async function inativarCupom(id,indAtivo) {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(data)
             });
-            carregarCupom();
+            listarCupom();
         }
     } else {
         alert("Este cupom já está inativado!")
@@ -321,8 +321,9 @@ async function inativarCupom(id,indAtivo) {
 
 }
 
+// Prepara o Formulário para a Visualização (e não a criação) de um Cupom
 
-function visualizarCupom() {
+function prepararFormularioVisualizarCupom() {
     document.getElementById("lblNovoCupom").hidden = true;
     document.getElementById("lblVisualizarCupom").hidden = false;
     document.getElementById("btnCancelarCupom").hidden = true;
@@ -348,7 +349,7 @@ function visualizarCupom() {
 
 
 // Prepara o Formulário para ser Editável.
-function criarCupom() {
+function prepararFormularioCriarCupom() {
     document.getElementById("lblNovoCupom").hidden = false;
     document.getElementById("lblVisualizarCupom").hidden = true;
 
@@ -444,7 +445,7 @@ function novoCupom() {
 
     document.getElementById("idDesconto").value = 0; // Preciosismo
 
-    criarCupom(); 
+    prepararFormularioCriarCupom(); 
 
     selecionarOrigem( obtemOrigemUsuarioLogado());
     exibirFormulario();
@@ -461,11 +462,21 @@ function criticaCupom() {
         return false;
     }
 
+
     // Verifica se o código foi Informado
     if (document.getElementById("inputCodigo").value == "") {
         alert("É obrigatório informar um código para o Cupom.");
         return false;
     }
+
+    const codDesconto = document.getElementById("inputCodigo").value;
+    if ((codDesconto.length >= 4) && codDesconto.substring(0,3).equalsIgnoreCase ('VCHR')) {
+        alert("Um cupom não pode começar com o código reservado a um voucher. Prefixo VCHR não permitido.");
+        return false;
+        
+    }
+
+
 
     // Verifica se o Tipo foi selecionado
     if ( ! document.getElementById("inlineRadioPercentual").checked && ! document.getElementById("inlineRadioValor").checked && ! document.getElementById("inlineRadioFrete").checked ) {
@@ -505,6 +516,10 @@ function criticaCupom() {
             alert("É obrigatório informar um valor para cupons do tipo valor.");
             return false;
         }
+        if (valor > 20) {
+            alert("O valor do cupom não pode exceder os R$ 20,00.");
+            return false;
+        }
     }
 
     // Verificando as Datas de Início e de Fim
@@ -531,6 +546,13 @@ function criticaCupom() {
         alert("A data de final deve ser posterior a data inicial.");
         return false;
     }
+
+    const diferencaEmDias = diferencaEmDias(dataInicio,dataFim);
+    if (diferencaEmDias > 60) {
+        alert("O período não pode ser superior a 60 dias.");
+        return false;
+    }
+   
 
     // Testa a Observação
 
@@ -594,10 +616,20 @@ function obtemRotaUsuarioLogado() {
     }
 }
 
+// Função gerada pelo Gemini
+// Calcula a diferença em dias para duas datas
+
+function diferencaEmDias(dataInicial, dataFinal) {
+  const msPorDia = 1000 * 60 * 60 * 24;
+
+  const diferencaMs = new Date(dataFinal) - new Date(dataInicial);
+
+  return Math.floor(diferencaMs / msPorDia);
+}
 
 
 //document.getElementById("clienteForm").addEventListener("submit", salvarCliente);
-carregarCupom();
+listarCupom();
 exibeUsuarioLogado();
 
 
