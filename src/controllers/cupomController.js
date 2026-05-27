@@ -97,6 +97,7 @@ exports.buscarCupomIntervalo = async (req, res) => {
 
 
             desconto = await db('desconto')
+                .where ('codNatureza','C')
                 .where(function() {
                     // Primeiro grupo: Data1 entre DataI e DataF
                     this.whereBetween('datInicioValidade', [datInicioBusca, datFimBusca])
@@ -146,12 +147,14 @@ exports.listar = async (req, res) => {
 
         if (codOrigem == "P") { // Plataforma
             desconto = desconto = await db('desconto')
+                    .where ('codNatureza','C')
                     .where( 'datInicioValidade','>',  umAnoAtras )
                     .where ('codOrigem','P')
                     .orderBy('datInicioValidade', 'desc');
         } else if (codOrigem == "L") { // Loja
             desconto = desconto = await db('desconto')
                     .where( 'datInicioValidade','>',  umAnoAtras )
+                            .where ('codNatureza','C')
                             .where ('codOrigem','L')
                             .where('idLoja',idLoja)
                             .orderBy('datInicioValidade');

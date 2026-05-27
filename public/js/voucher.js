@@ -1,8 +1,28 @@
 const API_URL = "http://localhost:3000/voucher";
 
-async function carregarVoucher() {
+
+
+
+
+
+// Define que o ID só pode ter números e letras maiúsculas
+//const alfabeto = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+//const gerarIdCustomizado = customAlphabet(alfabeto, 12); // Tamanho 12
+
+//const idCupom = gerarIdCustomizado();
+//console.log('ID Personalizado:', idCupom);
+
+//import { obterUsuarioLogado } from './servicoUsuario.js';
+
+async function listarVoucher() {
     // Lista os Vouchers
-    const res = await fetch(API_URL);
+
+    const rotaUsuarioLogado = obtemRotaUsuarioLogado();
+
+    const url = `${API_URL}/listar`+rotaUsuarioLogado;
+
+    const res = await fetch(url);  // Chama a função Listar
+
     // Converte para Jason
     const vouchers = await res.json();
     // aponta para a tabela de Vouchers no HTML
@@ -13,18 +33,118 @@ async function carregarVoucher() {
     // Adiciona uma Linha de Vouchers
     vouchers.forEach(voucher => {
         const row = document.createElement("tr");
-        const origemVoucher = (voucher.codOrigem = "P") ? "Plataforma" : "Loja";
-        const tipoVoucher = (voucher.codTipo = "V") ? "Valor"
-                        : (voucher.codTipo = "P") ? "Percentual"
-                        : (voucher.codTipo = "F") ? "Frete Grátis"
+        const origemVoucher = (voucher.codOrigem == "P") ? "Plataforma" : "Loja";
+        const tipoVoucher = (voucher.codTipo == "V") ? "Valor"
+                        : (voucher.codTipo == "P") ? "Percentual"
                         : "";
         const periodoValidade = (new Date (voucher.datInicioValidade)).toLocaleString("pt-BR") +"<br>"+(new Date (voucher.datFimValidade)).toLocaleString("pt-BR");
+
+        const situacao = (voucher.indAtivo == 1 ) ? "Ativo" : "Inativo";
         row.innerHTML = `
             <td>${origemVoucher}</td>
             <td>${voucher.codDesconto}</td>
             <td>${tipoVoucher}</td>
             <td>${periodoValidade}</td>
-            <td>00000</td>
+            <td>${situacao}</td>
+            <td class="actions">
+            <button onclick="consultarVoucher(${voucher.idDesconto})">👁️</button>
+            <button onclick="inativarVoucher(${voucher.idDesconto},${voucher.indAtivo})">❌</button>
+            </td>
+        `;
+        tabela.appendChild(row);
+    });
+}
+
+
+// Função Acionada pelo Botão Buscar
+async function buscarVoucher() {
+
+
+    // Obtem os Parâmetros de Pesquisa.
+
+    const codVoucher =  document.getElementById("inputCodigoBusca").value;
+    const datInicioBusca = document.getElementById("inputDataInicioBusca").value;
+    const datFimBusca = document.getElementById("inputDataFimBusca").value; 
+ 
+
+    const rotaUsuarioLogado = obtemRotaUsuarioLogado();
+  
+    // Verifica se informou corretamente os padrões de busca.
+
+    // Pelos menos algo tem que ter sido informado.
+    if ( (!codVoucher  && !datInicioBusca && !datFimBusca)) {
+        alert("É necessário ao menos informar o Código do Voucher ou as Datas de Início e de Fim de um período a ser buscado");
+        return;
+    }
+
+    // Não pode informar o voucher e uma das outras datas    
+    if (codVoucher  && (datInicioBusca || datFimBusca)) {
+        alert("É necessário informar o Código do Voucher ou as Datas de Início e de Fim de um período a ser buscado");
+        return;
+    }
+
+     
+    let url; // Url d Busca
+    
+
+    // se Informou uma das datas
+   
+    if ((datInicioBusca || datFimBusca)) {
+        // tem que informar as Duas Datas
+        if (datInicioBusca && datFimBusca) {
+            if (datInicioBusca < datFimBusca) {
+                // Vai chamar a Pesquisa por Período
+                url = `${API_URL}/buscarIntervalo/${datInicioBusca}/${datFimBusca}`+rotaUsuarioLogado;
+
+            } else {
+                alert("A Data de Início deve ser anterior ou igual a Data de Fim do período a ser buscado");
+                return;
+            }
+        } else {
+            alert("É necessário informar as Datas de Início e de Fim de um período a ser buscado");
+            return;
+        }
+    } else { // Informou o código
+        // Vai chamar a Pesquisa por Código
+        url = `${API_URL}/buscarCodigo/${codVoucher}`+rotaUsuarioLogado;
+
+    }
+
+
+    // Realiza a consulta
+    const res = await fetch(url, { method: "GET" });
+
+    if (res.status== 404) {
+        alert("Não foram encontrados vouchers para os critérios informados.");
+        return;
+
+    }
+    // Lista os Vouchers
+    
+    // Converte para Jason
+    const vouchers = await res.json();
+    // aponta para a tabela de Vouchers no HTML
+    const tabela = document.getElementById("tabelaVouchers");
+    // Limpa a tabela
+    tabela.innerHTML = "";
+
+    // Adiciona uma Linha de Vouchers
+    vouchers.forEach(voucher => {
+        const row = document.createElement("tr");
+        const origemVoucher = (voucher.codOrigem == "P") ? "Plataforma" : "Loja";
+        const tipoVoucher = (voucher.codTipo == "V") ? "Valor"
+                        : (voucher.codTipo == "P") ? "Percentual"
+                        
+                        : "";
+        const periodoValidade = (new Date (voucher.datInicioValidade)).toLocaleString("pt-BR") +"<br>"+(new Date (voucher.datFimValidade)).toLocaleString("pt-BR");
+
+        const situacao = (voucher.indAtivo == 1 ) ? "Ativo" : "Inativo";
+        row.innerHTML = `
+            <td>${origemVoucher}</td>
+            <td>${voucher.codDesconto}</td>
+            <td>${tipoVoucher}</td>
+            <td>${periodoValidade}</td>
+            <td>${situacao}</td>
             <td class="actions">
             <button onclick="consultarVoucher(${voucher.idDesconto})">👁️</button>
             <button onclick="inativarVoucher(${voucher.idDesconto})">❌</button>
@@ -32,10 +152,17 @@ async function carregarVoucher() {
         `;
         tabela.appendChild(row);
     });
+
+
 }
 
+
+
+// Função acionada pelo botão Salvar - irá criar um novo Voucher
+
 async function salvarVoucher(e) {
-    if (criticaVoucher()) {
+
+    if (criticaVoucher()) { // Realiza as Críticas
     
         //e.preventDefault();
 
@@ -49,10 +176,14 @@ async function salvarVoucher(e) {
 
         const codOrigem = document.querySelector('input[name="inlineRadioOrigem"]:checked').value;
         const codTipo = document.querySelector('input[name="inlineRadioTipo"]:checked').value;
+        const idUsuarioLogado = obtemIdUsuarioLogado();
+        const nomUsuarioLogado = obtemNomeUsuarioLogado();
 
+
+        // Monta o Registro
         const data = {
                     codDesconto : document.getElementById("inputCodigo").value,
-                    codNatureza : "C",
+                    codNatureza : "V",
                     codOrigem : codOrigem,
                     codTipo : codTipo,
                     valDesconto : document.getElementById("inputValor").value,
@@ -61,34 +192,60 @@ async function salvarVoucher(e) {
                     datFimValidade: datFimValidade,
                     obsDesconto : document.getElementById("inputObservacao").value,
                     indAtivo : 1,
-                    idLoja : 1,
-                    idUsuarioCriacao: 1,
+                    idUsuarioCriacao: idUsuarioLogado,
+                    
+                    nomUsuarioCriacao: nomUsuarioLogado,
+
                     datCriacao: datCriacao
-
-
         };
+        // Se for Loja, obter a Loja do Objeto Logado.
+
+        if (codOrigem == "L") {
+            const idLoja = obtemIdLojaUsuarioLogado();
+            data.idLoja = idLoja;
+        }
 
         const metodo = "POST"
         const url =  API_URL;
     
         
-        await fetch(url, {
-                method: metodo,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-        });
+        try {
+            // Simulando uma chamada de API que demora 1 segundo
+            const res = await fetch(url, {
+                        method: metodo,
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data)
+                });
 
-        // Recarrega a Grade a tela
-        ocultarFormulario();
-        carregarVoucher();
+            
+            if (res.ok) {
+                    // Recarrega a Grade a tela
+                ocultarFormulario();
+                listarVoucher();
+            } else if (res.status = 401) {
+                const resposta = await res.json();
+                alert("Inclusão não efetuada. " && resposta.erro);
+            } 
+    
+
+        //throw new Error('Erro na requisição');
+       
+        } catch (erro) {
+            alert("Inclusão não efetuada. ", erro,message)
+
+        }
+       
+    }
 }
-}
+
+// Consuta um Voucher Individual
 
 async function consultarVoucher(idDesconto) {
 
     // Obtem os dados de um determinado Voucher
     const res = await fetch(`${API_URL}/${idDesconto}`, { method: "GET" });
     const voucher = await res.json();
+
 
     document.getElementById("idDesconto").value = idDesconto;
     document.getElementById("inputCodigo").value = voucher.codDesconto;
@@ -105,7 +262,7 @@ async function consultarVoucher(idDesconto) {
     
     document.getElementById("inlineRadioPercentual").checked = (voucher.codTipo == "P");
     document.getElementById("inlineRadioValor").checked = (voucher.codTipo == "V") ;
-    document.getElementById("inlineRadioFrete").checked = (voucher.codTipo == "F") ;
+
 
     document.getElementById("inputValor").value = voucher.valDesconto;
     document.getElementById("inputPercentual").value = voucher.perDesconto;
@@ -113,88 +270,159 @@ async function consultarVoucher(idDesconto) {
     document.getElementById("inputDataInicio").value = voucher.datInicioValidade.toLocaleString('pt-BR').replace(' ', 'T').substring(0, 16);
     document.getElementById("inputDataFim").value = voucher.datFimValidade.toLocaleString('pt-BR').replace(' ', 'T').substring(0, 16);
     document.getElementById("inputObservacao").value = voucher.obsDesconto;
+    document.getElementById("inputQtdUtilizado").value = voucher.qtdDescontoUtilizado;
+    document.getElementById("inputValorUtilizado").value = voucher.valDescontoUtilizado;
+
+
+   
     document.getElementById("ckBoxInativo").checked = ( voucher.indAtivo == 0) ;
-    document.getElementById("inputCriadoPor").value = voucher.idUsuarioCriacao;
+    document.getElementById("inputCriadoPor").value = voucher.nomUsuarioCriacao;
     if (voucher.datCriacao != null) {
         document.getElementById("inputDataCriacao").value = voucher.datCriacao.toLocaleString('pt-BR').replace(' ', 'T').substring(0, 16);
     }
-    document.getElementById("inputInativadoPor").value = voucher.idUsuarioInativacao;
-    if (voucher.datInativacao != null) {
-        document.getElementById("inputDataInativacao").value = voucher.datInativacao.toLocaleString('pt-BR').replace(' ', 'T').substring(0, 16);
+    if (voucher.indAtivo == 0) {
+        document.getElementById("inputInativadoPor").value = voucher.nomUsuarioInativacao;
+        if (voucher.datInativacao != null) {
+            document.getElementById("inputDataInativacao").value = voucher.datInativacao.toLocaleString('pt-BR').replace(' ', 'T').substring(0, 16);
+        }
     }
-    exibirVoucher(true);
+
+   
+    prepararFormularioVisualizarVoucher(); 
+    exibeTipoDesconto(voucher.codTipo);
     exibirFormulario();
 
 }
 
-async function inativarVoucher(id) {
 
-    if (confirm("Deseja inativar este voucher?")) {
-        const datInativacao = (new Date()).toISOString().slice(0, 19).replace('T', ' ');
-        
-        const idUsuarioInativacao = 2;
-        
-        const data = {
+// Função que Inativa um voucher.
 
-                    idUsuarioInativacao : idUsuarioInativacao,
-                    datInativacao: datInativacao
+async function inativarVoucher(id,indAtivo) {
+    if (indAtivo == 1) {
+        if (confirm("Deseja inativar este voucher?")) {
+
+            // Obtem a data/hora e quem está inativando o voucher.
+            const datInativacao = (new Date()).toISOString().slice(0, 19).replace('T', ' ');
+            
+            const idUsuarioLogado = obtemIdLojaUsuarioLogado();
+            const nomUsuarioLogado = obtemNomeUsuarioLogado();
+            
+            const data = {
+
+                        idUsuarioInativacao : idUsuarioLogado,
+                        nomUsuarioInativacao : nomUsuarioLogado,
+                        datInativacao: datInativacao
+            }
+            const metodo = "DELETE"
+            const url =  `${API_URL}/${id}`;
+
+                await fetch(url, {
+                    method: metodo,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+            });
+            listarVoucher();
         }
-        const metodo = "DELETE"
-        const url =  `${API_URL}/${id}`;
-
-        //await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-
-        await fetch(url, {
-                method: metodo,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-        });
-        carregarVoucher();
-    }
-}
-
-function exibirVoucher(visualizar) {
-
-
-
-    if (visualizar) {
-        document.getElementById("lblNovoVoucher").hidden = true;
-        document.getElementById("lblVisualizarVoucher").hidden = false;
-        document.getElementById("btnCancelarVoucher").hidden = true;
-        document.getElementById("btnSalvarVoucher").hidden = true;
-        document.getElementById("btnRetornarVoucher").hidden = false;
-
-        
     } else {
-        document.getElementById("lblNovoVoucher").hidden = false;
-        document.getElementById("lblVisualizarVoucher").hidden = true;
-        document.getElementById("btnCancelarVoucher").hidden = false;
-        document.getElementById("btnSalvarVoucher").hidden = false;
-        document.getElementById("btnRetornarVoucher").hidden = true;
-
+        alert("Este voucher já está inativado!")
     }
 
 }
 
-function exibeTipoDesconto(tipoDesconto) {
-    document.getElementById("inputPercentual").hidden = (tipoDesconto != "P");
-    document.getElementById("labelPercentual").hidden = (tipoDesconto != "P");
+// Prepara o Formulário para a Visualização (e não a criação) de um Voucher
 
-    document.getElementById("inputValor").hidden = (tipoDesconto != "V");
-    document.getElementById("labelValor").hidden = (tipoDesconto != "V");
+function prepararFormularioVisualizarVoucher() {
+    document.getElementById("lblNovoVoucher").hidden = true;
+    document.getElementById("lblVisualizarVoucher").hidden = false;
+    document.getElementById("btnCancelarVoucher").hidden = true;
+    document.getElementById("btnSalvarVoucher").hidden = true;
+    document.getElementById("btnRetornarVoucher").hidden = false;
+    document.getElementById("divAtivo").classList.replace("col-md-3", "col-md-6");
+
+
+    // Desabilita os campos de edição da tela
+    document.getElementById("inputCodigo").disabled = true;
+    document.getElementById("inlineRadioPercentual").disabled = true;
+    document.getElementById("inlineRadioValor").disabled = true;
+    
+    document.getElementById("inputPercentual").disabled = true;
+    document.getElementById("inputValor").disabled = true;
+    document.getElementById("inputDataInicio").disabled = true;
+    document.getElementById("inputDataFim").disabled = true;
+    document.getElementById("inputObservacao").disabled = true;
+
+    document.getElementById("areaControle").hidden = false;
+    
 }
 
+
+// Prepara o Formulário para ser Editável.
+function prepararFormularioCriarVoucher() {
+    document.getElementById("lblNovoVoucher").hidden = false;
+    document.getElementById("lblVisualizarVoucher").hidden = true;
+
+    // Habilita os campos de edição da tela
+
+    document.getElementById("inputCodigo").disabled = false;
+    document.getElementById("inlineRadioPercentual").disabled = false;
+    document.getElementById("inlineRadioValor").disabled = false;
+    
+    document.getElementById("inputPercentual").disabled = false;
+    document.getElementById("inputValor").disabled = false;
+    document.getElementById("inputDataInicio").disabled = false;
+    document.getElementById("inputDataFim").disabled = false;
+    document.getElementById("inputObservacao").disabled = false;
+
+    document.getElementById("btnCancelarVoucher").hidden = false;
+    document.getElementById("btnSalvarVoucher").hidden = false;
+    document.getElementById("btnRetornarVoucher").hidden = true;
+    document.getElementById("divAtivo").classList.replace("col-md-6", "col-md-3");
+
+    // Marca o Tipo de Desconto Percentual como "Default"
+
+    document.getElementById("inlineRadioPercentual").checked = true;
+    exibeTipoDesconto("P");
+    document.getElementById("areaControle").hidden = true;
+
+// To Aqui
+    //const alfabeto = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    //const gerarIdCustomizado = customAlphabet(alfabeto, 12); // Tamanho 12
+
+    //const idNovoCupom = gerarIdCustomizado();
+
+
+
+ 
+
+  // To Aqui
+
+
+
+}       
+
+// Exibe ou oculta os campos de Valor ou de Percentual, de acordo com o Tipo do Desconto.
+function exibeTipoDesconto(tipoDesconto) {
+    document.getElementById("divPercentual").hidden = (tipoDesconto != "P");
+
+    document.getElementById("divValor").hidden = (tipoDesconto != "V");
+}
+
+
+// Oculta a área de lista e exibe a área de Formulário
 function exibirFormulario() {
 
-document.getElementById("areaEdicao").hidden = false
-document.getElementById("areaLista").hidden = true
+    document.getElementById("areaEdicao").hidden = false
+    document.getElementById("areaLista").hidden = true
 }
 
+
+// Oculta a área de formulário e exibe a área de lista
 function ocultarFormulario() {
-document.getElementById("areaEdicao").hidden = true
-document.getElementById("areaLista").hidden = false
+    document.getElementById("areaEdicao").hidden = true
+    document.getElementById("areaLista").hidden = false
 }
 
+// Limpa os valores dos Inputs dos campos do Formuário.
 function limparCamposFormulario() {
     document.getElementById("idDesconto").value = 0;
     document.getElementById("inlineRadioLoja").checked = false;
@@ -203,7 +431,7 @@ function limparCamposFormulario() {
     document.getElementById("inputCodigo").value = "";
     document.getElementById("inlineRadioPercentual").checked = false;
     document.getElementById("inlineRadioValor").checked = false;
-    document.getElementById("inlineRadioFrete").checked = false;
+   
     document.getElementById("inputPercentual").value = "";
     document.getElementById("inputValor").value = "";
     document.getElementById("inputDataInicio").value = "";
@@ -218,13 +446,52 @@ function limparCamposFormulario() {
 
 }
 
-function novoVoucher() {
-    limparCamposFormulario();
-    document.getElementById("idDesconto").value = 0;
-    exibirVoucher(false);
-    exibirFormulario();
+
+// Marca o Rádio Button de Plataforma ou de Loja.
+function selecionarOrigem(codOrigem) {
+
+// Loja ou Plataforma
+    if (codOrigem == "P") {
+        document.getElementById("inlineRadioPlataforma").checked = true;
+        document.getElementById("inlineRadioLoja").checked = false;
+    } else {
+        document.getElementById("inlineRadioPlataforma").checked = false;
+        document.getElementById("inlineRadioLoja").checked = true;
+    }
+
+
+
 }
 
+
+// Função chama 
+async function novoVoucher() {
+   
+    limparCamposFormulario();
+
+    document.getElementById("idDesconto").value = 0; // Preciosismo
+
+    prepararFormularioCriarVoucher(); 
+
+       const url = `${API_URL}/gerarCodigoVoucher`;
+
+    // Realiza a consulta
+    const res = await fetch(url, { method: "GET" });
+
+    console.log(res);
+
+    const voucher = await res.json();
+    console.log(voucher);
+
+    document.getElementById("inputCodigo").value = voucher.codDesconto;
+
+    selecionarOrigem( obtemOrigemUsuarioLogado());
+    exibirFormulario();
+    
+}
+
+
+// Efatua as críticas de negócio para criação de voucher
 function criticaVoucher() {
 
     // Testa a Origem do Voucher 
@@ -233,16 +500,30 @@ function criticaVoucher() {
         return false;
     }
 
+
+    // Verifica se o código foi Informado
     if (document.getElementById("inputCodigo").value == "") {
         alert("É obrigatório informar um código para o Voucher.");
         return false;
     }
-    
-    if ( ! document.getElementById("inlineRadioPercentual").checked && ! document.getElementById("inlineRadioValor").checked && ! document.getElementById("inlineRadioValor").checked ) {
-        alert("É obrigatório identificar se é o voucher é Percentual, Valor ou Frete Grátis.");
+
+    const codDesconto = document.getElementById("inputCodigo").value;
+    if ((codDesconto.length >= 4) && codDesconto.substring(0,3).toUpperCase() == 'VCHR') {
+        alert("Um voucher não pode começar com o código reservado a um voucher. Prefixo VCHR não permitido.");
+        return false;
+        
+    }
+
+
+
+    // Verifica se o Tipo foi selecionado
+    if ( ! document.getElementById("inlineRadioPercentual").checked && ! document.getElementById("inlineRadioValor").checked) {
+        alert("É obrigatório identificar se é o voucher é Percentual ou Valor.");
         return false;
     }
 
+
+    // Verifica se é do Tipo Percentual
     if (document.getElementById("inlineRadioPercentual").checked) {
         if (document.getElementById("inputPercentual").value  == "" ) {
             alert("É obrigatório informar um percentual para vouchers do tipo percentual.");
@@ -253,6 +534,13 @@ function criticaVoucher() {
             alert("É obrigatório informar um percentual para vouchers do tipo percentual.");
             return false;
         }
+        if (percentual > 60) {
+            alert("O valor do percentual não pode exceder os 60%.");
+            return false;
+        }
+
+
+
     }
     
     // Voucher do tipo Valor
@@ -264,6 +552,10 @@ function criticaVoucher() {
         const valor = Number(document.getElementById("inputValor").value);
         if (valor  == 0 ) {
             alert("É obrigatório informar um valor para vouchers do tipo valor.");
+            return false;
+        }
+        if (valor > 20) {
+            alert("O valor do voucher não pode exceder os R$ 20,00.");
             return false;
         }
     }
@@ -293,6 +585,17 @@ function criticaVoucher() {
         return false;
     }
 
+    const msPorDia = 1000 * 60 * 60 * 24; // Quantidade de Milisegundos em um dia
+
+    const diferencaMs = new Date(dataFim) - new Date(dataInicio); // Obtem a dirença em dias em Milisegundos
+
+    const diferencaEmDias = Math.floor(diferencaMs / msPorDia); // Calcula a direença em dias.
+    if (diferencaEmDias > 60) {
+        alert("O período não pode ser superior a 60 dias.");
+        return false;
+    }
+   
+
     // Testa a Observação
 
     if (! document.getElementById("inputObservacao").value ){
@@ -304,5 +607,73 @@ function criticaVoucher() {
 
 }
 
+function exibeUsuarioLogado() {
+    const usuarioLogado = obterUsuarioLogado();
+    if (usuarioLogado.tipo == "Loja") {
+        document.getElementById("lblUsuario").textContent = usuarioLogado.tipo+" "+usuarioLogado.idLoja +": "+usuarioLogado.nome;
+    } else {
+        document.getElementById("lblUsuario").textContent = usuarioLogado.tipo +": "+usuarioLogado.nome;
+    }
+
+    
+}
+
+
+function obtemOrigemUsuarioLogado() {
+    const usuarioLogado = obterUsuarioLogado();
+    if (usuarioLogado.tipo == "Loja") {
+        return "L";
+    } else if (usuarioLogado.tipo == "Plataforma") {
+        return "P";
+    } else {
+        alert("Usuário de tipo não autorizado: "+usuarioLogado.tipo);
+        return "";
+    }
+}
+
+function obtemNomeUsuarioLogado() {
+    const usuarioLogado = obterUsuarioLogado();
+    return usuarioLogado.nome;
+}
+
+function obtemIdUsuarioLogado() {
+    const usuarioLogado = obterUsuarioLogado();
+    return usuarioLogado.id;
+}
+
+function obtemIdLojaUsuarioLogado() {
+    const usuarioLogado = obterUsuarioLogado();
+    return usuarioLogado.idLoja;
+}
+
+function obtemRotaUsuarioLogado() {
+    const usuarioLogado = obterUsuarioLogado();
+  
+    if (usuarioLogado.tipo == "Plataforma") {
+        return "/P/0";
+    } else if (usuarioLogado.tipo == "Loja") { // Loja
+        return "/L/"+usuarioLogado.idLoja;
+    } else {
+        return "";
+    }
+}
+
+// Função gerada pelo Gemini
+// Calcula a diferença em dias para duas datas
+
+function diferencaEmDias(dataInicial, dataFinal) {
+  const msPorDia = 1000 * 60 * 60 * 24;
+
+  const diferencaMs = new Date(dataFinal) - new Date(dataInicial);
+
+  return Math.floor(diferencaMs / msPorDia);
+}
+
+
 //document.getElementById("clienteForm").addEventListener("submit", salvarCliente);
-carregarVoucher();
+listarVoucher();
+exibeUsuarioLogado();
+
+
+ 
+  

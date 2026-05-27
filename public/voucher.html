@@ -1,120 +1,174 @@
 <!DOCTYPE html>
-    <html lang="pt-BR">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Vouchers de Desconto</title>
-        <link href="/css/bootstrap.css" rel="stylesheet" type="text/css">
-    </head>
-    <body class="bg-light"> 
-        <div class="container py-5">
-            <div id="areaLista">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h2 class="h2  text-dark">Vouchers de Desconto</h2>
-                    <button onclick="novoCupom()"class="btn btn-primary px-4">+ Criar Voucher</button>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vouchers de Desconto</title>
+    <link href="/css/bootstrap.css" rel="stylesheet" type="text/css">
+</head>
+<body class="bg-light"> 
+    <div class="container py-5">
+        <div id="areaLista">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="h2  text-dark">Vouchers de Desconto</h2>
+                <label class="form-label" id="lblUsuario">Usuário</label>
+            </div>
+
+            <div class="card border-0 shadow-sm p-4">
+                
+                <div class="row">
+                    <div class="col-md-9">
+                        <label for="inputCodigoBusca" class="form-label">Código</label>
+                        <input type="text" class="form-control" id="inputCodigoBusca"  placeholder="Código do Voucher">
+                    </div>
+                    <div class="col-md-3 align-self-end">
+                        <button onclick="buscarVoucher()" class="btn btn-primary w-100">🔍 Buscar</button>
+                    </div>
                 </div>
 
-                <div class="card border-0 shadow-sm p-4">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="inputDataInicioBusca" class="form-label">Data de Início</label>
+                        <input type="date" class="form-control" id="inputDataInicioBusca" placeholder="Data de Início">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="inputDataFimBusca" class="form-label">Data de Fim</label>
+                        <input type="date" class="form-control" id="inputDataFimBusca" placeholder="Data de Fim">
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="button" onclick="novoVoucher()"class="btn btn-success px-4">+ Criar Voucher</button>
                     
-                    <div class="row">
-                        <div class="col-md-9">
-                            <label for="inputCodigoBusca" class="form-label">Código</label>
-                            <input type="text" class="form-control" id="inputCodigoBusca"  placeholder="Código do Voucher">
-                        </div>
-                        <div class="col-md-3">
-                            <button class="btn btn-outline-secondary w-100">🔍 Busca</button>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-3">
-                            <label for="inputDataInicioBusca" class="form-label">Data de Início</label>
-                            <input type="date" class="form-control" id="inputDataInicioBusca" placeholder="Data de Início">
-                        </div>
-                        <div class="col-md-3">
-                            <label for="inputDataInicioBusca" class="form-label">Data de Fim</label>
-                            <input type="date" class="form-control" id="inputDataFimBusca" placeholder="Data de Fim">
-                        </div>
-                    </div>
-
-
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle text-center mb-0">
-                            <thead class="text-muted">
-                                <tr>
-                                    <th class="fw-normal pb-3 border-bottom">Origem</th>
-                                    <th class="fw-normal pb-3 border-bottom">Cliente</th>
-                                    <th class="fw-normal pb-3 border-bottom">Código</th>
-                                    <th class="fw-normal pb-3 border-bottom">Tipo de Desconto</th>
-                                    <th class="fw-normal pb-3 border-bottom">Período</th>
-                                    <th class="fw-normal pb-3 border-bottom">Utilizado</th>
-                                    <th class="fw-normal pb-3 border-bottom">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody class="border-top-0" id="tabelaCupons"></tbody>
-                        </table>
-                    </div>
                 </div>
-            </div> <!-- Fim da área Lista -->
 
 
-
-
-
-            <div id="areaEdicao" hidden>   <!-- Incluir o Hidden -->
-                <input type="hidden" id="idDesconto" />
-                <div>
-                    <h2 class="h2" id="lblNovoCupom">Novo Voucher</h2>
-                    <h2 class="h2" id="lblVisualizarCupom" hidden>Visualizar Voucher</h2>
-
-                    <hr>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle text-center mb-0">
+                        <thead class="text-muted">
+                            <tr>
+                                <th class="fw-normal pb-3 border-bottom">Origem</th>
+                                <th class="fw-normal pb-3 border-bottom">Código</th>
+                                <th class="fw-normal pb-3 border-bottom">Tipo de Desconto</th>
+                                <th class="fw-normal pb-3 border-bottom">Período</th>
+                                <th class="fw-normal pb-3 border-bottom">Situação</th>
+                                <th class="fw-normal pb-3 border-bottom">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody class="border-top-0" id="tabelaVouchers">
+                            <!-- 
+                            <tr>
+                                <td class="py-3">Plataforma</td>
+                                <td>LAB3</td>
+                                <td>Percentagem (%)</td>
+                                <td>01/01/2026<br>30/06/2026</td>
+                                <td>15</td>
+                                <td>
+                                    <button class="btn btn-sm btn-link text-decoration-none fs-5">👁️</button>
+                                    <button class="btn btn-sm btn-link text-decoration-none fs-5 text-danger">❌</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="py-3">Loja</td>
+                                <td>SENAC</td>
+                                <td>Frete Grátis</td>
+                                <td>01/01/2025<br>30/12/2025</td>
+                                <td>42</td>
+                                <td>
+                                    <button class="btn btn-sm btn-link text-decoration-none fs-5">👁️</button>
+                                    <button class="btn btn-sm btn-link text-decoration-none fs-5 text-danger">❌</button>
+                                </td>
+                            </tr> -->
+                        </tbody>
+                    </table>
                 </div>
+            </div>
+        </div> <!-- Fim da área Lista -->
+
+
+
+
+        <div id="areaEdicao" class ="mb-3" hidden>   <!-- Incluir o Hidden -->
+            <input type="hidden" id="idDesconto" />
+            <div>
+                <h2 class="h2" id="lblNovoVoucher">Novo Voucher</h2>
+                <h2 class="h2" id="lblVisualizarVoucher" hidden>Visualizar Voucher</h2>
+
+                <hr>
+            </div>
+            <div class="card border-0 shadow-sm p-4">
+
+                <!-- Área de Origem do Voucher -->
                 <div>
                     <h5 class="h5 mb-0 text-dark">Origem</h5>
+                    <br>
                 </div>
-                <div class="form-check form-check-inline col-md-2">
-                    <input class="form-check-input" type="radio" name="inlineRadioOrigem" id="inlineRadioPlataforma" value="P">
-                    <label class="form-check-label" for="inlineRadioPlataforma">Plataforma</label>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="inlineRadioOrigem" id="inlineRadioPlataforma" value="P" disabled>
+                            <label class="form-check-label" for="inlineRadioPlataforma">Plataforma</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="inlineRadioOrigem" id="inlineRadioLoja" value="L" disabled>
+                            <label class="form-check-label" for="inlineRadioLoja">Loja</label>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-check form-check-inline col-md-2">
-                    <input class="form-check-input" type="radio" name="inlineRadioOrigem" id="inlineRadioLoja" value="L">
-                    <label class="form-check-label" for="inlineRadioLoja">Loja</label>
+
+                <!-- Código do Voucher do Voucher -->
+
+                <!-- Área de Origem do Voucher -->
+                <div>
+                    <br>
+                    <h5 class="h5 mb-0 text-dark">Identificação</h5>
+                    <br>
                 </div>
+
+                
 
                 <div class="col-md-9">
                     <label for="inputCodigo" class="form-label">Código</label>
                     <input type="text" class="form-control" id="inputCodigo"  placeholder="Código do Voucher">
                 </div>
-                <div>
-                    <h5 class="h5 mb-0 text-dark">Tipo de Desconto</h5>
+                <div class="col-md-9">
+                    <label for="inputObservacao" class="form-label">Observação/Motivo da Criação do Voucher</label>
+                    <textarea class="form-control" id="inputObservacao" rows="3"></textarea>
                 </div>
-                <div class="row">
 
-                    <div class="form-check form-check-inline col-md-2">
-                        <input class="form-check-input" onclick="exibeTipoDesconto('P')" type="radio" name="inlineRadioTipo" id="inlineRadioPercentual" value="P">
-                        <label class="form-check-label" for="inlineRadioPercentual">Percentual %</label>
-                    </div>
-                    <div class="form-check form-check-inline col-md-2">
-                        <input class="form-check-input" onclick="exibeTipoDesconto('V')" type="radio" name="inlineRadioTipo" id="inlineRadioValor" value="V">
-                        <label class="form-check-label" for="inlineRadioValor">Valor</label>
-                    </div>
-                    <div class="form-check form-check-inline col-md-2">
-                        <input class="form-check-input" onclick="exibeTipoDesconto('F')" type="radio" name="inlineRadioTipo" id="inlineRadioFrete" value="F">
-                        <label class="form-check-label" for="inlineRadioFrete">Frete grátis</label>
+                <!-- Área de Tipo de Desconto: Percentual, Valor ou Frete Grátis -->
+
+                <div>
+                    <br>
+                    <h5 class="h5 mb-0 text-dark">Tipo de Desconto</h5>
+                    
+                </div>
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" onclick="exibeTipoDesconto('P')" type="radio" name="inlineRadioTipo" id="inlineRadioPercentual" value="P">
+                            <label class="form-check-label" for="inlineRadioPercentual">Percentual %</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" onclick="exibeTipoDesconto('V')" type="radio" name="inlineRadioTipo" id="inlineRadioValor" value="V">
+                            <label class="form-check-label" for="inlineRadioValor">Valor</label>
+                        </div>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-2" id="divPercentual">
                         <label for="inputPercentual" class="form-label" id="labelPercentual">Percentual do Desconto</label>
                         <input type="text" class="form-control" id="inputPercentual">
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-2" id="divValor" >
                         <label for="inputValor" class="form-label" id="labelValor">Valor do Desconto</label>
                         <input type="text" class="form-control" id="inputValor">
                     </div>
                 </div>
                 <div>
+                    <br>
                     <h5 class="h5 mb-0 text-dark">Período</h5>
+                    <br>
                 </div>
 
                 <div class="row">
@@ -127,54 +181,79 @@
                         <input type="datetime-local" class="form-control" id="inputDataFim">
                     </div>
                 </div>
-                <div class="col-md-9">
-                    <label for="inputObservacao" class="form-label">Observação</label>
-                    <textarea class="form-control" id="inputObservacao" rows="3"></textarea>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <label for="inputCriadoPor" class="form-label">Criado Por</label>
-                        <input type="text" class="form-control" id="inputCriadoPor" disabled>
+
+
+                <div id="areaControle">
+
+                    <div>
+                        <br>
+                        <h5 class="h5 mb-0 text-dark">Controle</h5>
+                        <br>
                     </div>
-                    <div class="col-md-3">
-                        <label for="inputDataCriacao" class="form-label">Data de Criação</label>
-                        <input type="datetime-local" class="form-control" id="inputDataCriacao" disabled>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="inputQtdUtilizado" class="form-label">Quantidade Utilizada</label>
+                            <input type="text" class="form-control" id="inputQtdUtilizado" disabled>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="inputValorUtilizado" class="form-label">Valor Utilizado</label>
+                            <input type="text" class="form-control" id="inputValorUtilizado" disabled>
+                        </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <label for="inputInativadoPor" class="form-label">Inativado Por</label>
-                        <input type="text" class="form-control" id="inputInativadoPor" disabled>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="inputCriadoPor" class="form-label">Criado Por</label>
+                            <input type="text" class="form-control" id="inputCriadoPor" disabled>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="inputDataCriacao" class="form-label">Data de Criação</label>
+                            <input type="datetime-local" class="form-control" id="inputDataCriacao" disabled>
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <label for="inputDataInativacao" class="form-label">Data de Inativação</label>
-                        <input type="datetime-local" class="form-control" id="inputDataInativacao" disabled>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="inputInativadoPor" class="form-label">Inativado Por</label>
+                            <input type="text" class="form-control" id="inputInativadoPor" disabled>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="inputDataInativacao" class="form-label">Data de Inativação</label>
+                            <input type="datetime-local" class="form-control" id="inputDataInativacao" disabled>
+                        </div>
                     </div>
-                </div>
+                </div> <!-- Fim da área de Controle-->
                 <hr>
                 <div class="row">
-                    <div class="form-check col-md-3"">
+                    <div class="form-check col-md-3" id="divAtivo">
                         <input class="form-check-input" type="checkbox" value="0" id="ckBoxInativo" disabled>
                         <label class="form-check-label" for="ckBoxInativo">Inativo</label>
                     </div>
-                    <button id="btnCancelarCupom" onclick="ocultarFormulario()" class="btn btn-secondary col-md-3">Cancelar</button>
-                    <button id="btnSalvarCupom" onclick="salvarCupom()" class="btn btn-primary col-md-3">Salvar</button>
-                    <button id="btnRetornarCupom"  onclick="ocultarFormulario()" class="btn btn-primary col-md-3" hidden>Retornar</button>
                     
+                    <div id="btnCancelarVoucher" class="col-md-3">
+                        <button onclick="ocultarFormulario()" class="btn btn-secondary w-100">Cancelar</button>
+                
+                    </div>
+                    <div id="btnSalvarVoucher"  class="col-md-3">
+                        <button onclick="salvarVoucher()" class="btn btn-primary w-100">Salvar</button>
 
+                    </div>
+                    <div  id="btnRetornarVoucher" class="col-md-3" hidden>
+                        <button  onclick="ocultarFormulario()" class="btn btn-primary w-100">Retornar</button>
+                    </div>
                 </div>
-            </div> <!-- Fim da Área de Edição -->
+            </div>
+        </div> <!-- Fim da Área de Edição -->
 
-        </div>
-
-
-    
-
-        <!-- Carrega o Boostrap -->
-
-        <script src="js/bootstrap.js" type="text/javascript"></script>
-        <script src="js/voucher.js" type="text/javascript"></script>
+    </div>
 
 
-    </body>
+   
+
+    <!-- Carrega o Boostrap -->
+
+    <script src="js/bootstrap.js" type="text/javascript"></script>
+    <script src="js/servicoUsuario.js" type="text/javascript"></script>
+    <script src="js/voucher.js" type="text/javascript"></script>
+
+
+</body>
 </html>

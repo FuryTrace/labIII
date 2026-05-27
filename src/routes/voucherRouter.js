@@ -25,11 +25,15 @@ const controller = require('../controllers/voucherController');
 
 */
 
-router.get('/', controller.listar);
-router.get('/cliente/:idCliente', controller.listarPorCliente);
+router.get('/gerarCodigoVoucher',controller.gerarCodigoVoucher);
+router.get('/buscarCodigo/:codVoucher/:codOrigem/:idLoja?', controller.buscarVoucherCodigo);
+router.get('/buscarIntervalo/:datInicioBusca/:datFimBusca/:codOrigem/:idLoja?', controller.buscarVoucherIntervalo);
+
+router.get('/listar/:codOrigem/:idLoja?', controller.listar);
 router.get('/:idDesconto', controller.obter);
+
 router.post('/', controller.inserir);
-//router.put('/:idDesconto', controller.inativar);
+
 router.delete('/:idDesconto', controller.inativar);
 
 /* module.exports é uma propriedade do Node.js que define o que um módulo JavaScript exporta 
