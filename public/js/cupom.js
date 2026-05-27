@@ -470,7 +470,7 @@ function criticaCupom() {
     }
 
     const codDesconto = document.getElementById("inputCodigo").value;
-    if ((codDesconto.length >= 4) && codDesconto.substring(0,3).equalsIgnoreCase ('VCHR')) {
+    if ((codDesconto.length >= 4) && codDesconto.substring(0,3).toUpperCase() == 'VCHR') {
         alert("Um cupom não pode começar com o código reservado a um voucher. Prefixo VCHR não permitido.");
         return false;
         
@@ -547,7 +547,11 @@ function criticaCupom() {
         return false;
     }
 
-    const diferencaEmDias = diferencaEmDias(dataInicio,dataFim);
+    const msPorDia = 1000 * 60 * 60 * 24; // Quantidade de Milisegundos em um dia
+
+    const diferencaMs = new Date(dataFim) - new Date(dataInicio); // Obtem a dirença em dias em Milisegundos
+
+    const diferencaEmDias = Math.floor(diferencaMs / msPorDia); // Calcula a direença em dias.
     if (diferencaEmDias > 60) {
         alert("O período não pode ser superior a 60 dias.");
         return false;
