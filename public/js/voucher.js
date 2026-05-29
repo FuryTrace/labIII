@@ -180,24 +180,20 @@ async function buscarVoucher() {
 
     const codVoucher =  document.getElementById("inputCodigoBusca").value;
     const idCliente =   document.getElementById("inputCmbClienteBusca").value;
-    
-    const datInicioBusca = document.getElementById("inputDataInicioBusca").value;
-    const datFimBusca = document.getElementById("inputDataFimBusca").value; 
- 
 
     const rotaUsuarioLogado = obtemRotaUsuarioLogado();
   
     // Verifica se informou corretamente os padrões de busca.
 
     // Pelos menos algo tem que ter sido informado.
-    if ( (!codVoucher  && !datInicioBusca && !datFimBusca)) {
-        alert("É necessário ao menos informar o Código do Voucher ou as Datas de Início e de Fim de um período a ser buscado");
+    if ( (!codVoucher  && !idCliente )) {
+        alert("É necessário ao menos informar o Código do Voucher ou selecionar um Cliente para ser buscado");
         return;
     }
 
     // Não pode informar o voucher e uma das outras datas    
-    if (codVoucher  && (datInicioBusca || datFimBusca)) {
-        alert("É necessário informar o Código do Voucher ou as Datas de Início e de Fim de um período a ser buscado");
+    if (codVoucher  && idCliente) {
+        alert("É necessário informar o Código do Voucher ou selecionar um Cliente para ser buscado");
         return;
     }
 
@@ -207,7 +203,7 @@ async function buscarVoucher() {
 
     // se Informou uma das datas
    
-    if ((datInicioBusca || datFimBusca)) {
+    if ((idCliente)) {
         // tem que informar as Duas Datas
         if (datInicioBusca && datFimBusca) {
             if (datInicioBusca < datFimBusca) {
@@ -247,9 +243,11 @@ async function buscarVoucher() {
     tabela.innerHTML = "";
 
     // Adiciona uma Linha de Vouchers
-    vouchers.forEach(voucher => {
+        for (const voucher of vouchers) {
         const row = document.createElement("tr");
         const origemVoucher = (voucher.codOrigem == "P") ? "Plataforma" : "Loja";
+
+        const cliente = await obtemCliente(voucher.idCliente);
         const tipoVoucher = (voucher.codTipo == "V") ? "Valor"
                         : (voucher.codTipo == "P") ? "Percentual"
                         
@@ -259,6 +257,7 @@ async function buscarVoucher() {
         const situacao = (voucher.indAtivo == 1 ) ? "Ativo" : "Inativo";
         row.innerHTML = `
             <td>${origemVoucher}</td>
+            <td>${cliente.nome}</td>
             <td>${voucher.codDesconto}</td>
             <td>${tipoVoucher}</td>
             <td>${periodoValidade}</td>
@@ -269,7 +268,7 @@ async function buscarVoucher() {
             </td>
         `;
         tabela.appendChild(row);
-    });
+    };
 
 
 }
