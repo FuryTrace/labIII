@@ -179,6 +179,8 @@ async function buscarVoucher() {
     // Obtem os Parâmetros de Pesquisa.
 
     const codVoucher =  document.getElementById("inputCodigoBusca").value;
+    const idCliente =   document.getElementById("inputCmbClienteBusca").value;
+    
     const datInicioBusca = document.getElementById("inputDataInicioBusca").value;
     const datFimBusca = document.getElementById("inputDataFimBusca").value; 
  
