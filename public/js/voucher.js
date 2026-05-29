@@ -384,17 +384,7 @@ function prepararFormularioCriarVoucher() {
     exibeTipoDesconto("P");
     document.getElementById("areaControle").hidden = true;
 
-// To Aqui
-    //const alfabeto = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    //const gerarIdCustomizado = customAlphabet(alfabeto, 12); // Tamanho 12
 
-    //const idNovoCupom = gerarIdCustomizado();
-
-
-
- 
-
-  // To Aqui
 
 
 
@@ -458,11 +448,21 @@ function selecionarOrigem(codOrigem) {
         document.getElementById("inlineRadioPlataforma").checked = false;
         document.getElementById("inlineRadioLoja").checked = true;
     }
-
-
-
 }
 
+
+async function geraIdVoucher() {
+    const url = `${API_URL}/gerarCodigoVoucher`;
+
+    // Realiza a consulta
+    const res = await fetch(url, { method: "GET" });
+
+    const voucher = await res.json();
+   
+
+    document.getElementById("inputCodigo").value = voucher.codDesconto;
+
+}
 
 // Função chama 
 async function novoVoucher() {
@@ -473,17 +473,8 @@ async function novoVoucher() {
 
     prepararFormularioCriarVoucher(); 
 
-       const url = `${API_URL}/gerarCodigoVoucher`;
-
-    // Realiza a consulta
-    const res = await fetch(url, { method: "GET" });
-
-    console.log(res);
-
-    const voucher = await res.json();
-    console.log(voucher);
-
-    document.getElementById("inputCodigo").value = voucher.codDesconto;
+    
+    await geraIdVoucher();
 
     selecionarOrigem( obtemOrigemUsuarioLogado());
     exibirFormulario();
