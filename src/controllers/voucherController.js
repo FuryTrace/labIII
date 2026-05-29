@@ -123,9 +123,9 @@ exports.buscarVoucherCodigo = async (req, res) => {
 
 // Busca Vouchers de um Intervalo
 
-exports.buscarVoucherIntervalo = async (req, res) => {
+exports.buscarVoucherCliente = async (req, res) => {
     try {
-        const { datInicioBusca, datFimBusca,codOrigem, idLoja } = req.params;
+        const { idCliente, codOrigem, idLoja } = req.params;
 
         let desconto;
         if (codOrigem == "P") { // Plataforma
@@ -133,6 +133,7 @@ exports.buscarVoucherIntervalo = async (req, res) => {
 
             desconto = await db('desconto')
                 .where ('codNatureza','V')
+                .where ('idCliente','=' )
                 .where(function() {
                     // Primeiro grupo: Data1 entre DataI e DataF
                     this.whereBetween('datInicioValidade', [datInicioBusca, datFimBusca])
