@@ -204,20 +204,8 @@ async function buscarVoucher() {
     // se Informou uma das datas
    
     if ((idCliente)) {
-        // tem que informar as Duas Datas
-        if (datInicioBusca && datFimBusca) {
-            if (datInicioBusca < datFimBusca) {
-                // Vai chamar a Pesquisa por Período
-                url = `${API_URL}/buscarIntervalo/${datInicioBusca}/${datFimBusca}`+rotaUsuarioLogado;
+        url = `${API_URL}/buscarCliente/${idCliente}`+rotaUsuarioLogado;
 
-            } else {
-                alert("A Data de Início deve ser anterior ou igual a Data de Fim do período a ser buscado");
-                return;
-            }
-        } else {
-            alert("É necessário informar as Datas de Início e de Fim de um período a ser buscado");
-            return;
-        }
     } else { // Informou o código
         // Vai chamar a Pesquisa por Código
         url = `${API_URL}/buscarCodigo/${codVoucher}`+rotaUsuarioLogado;

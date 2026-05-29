@@ -27,7 +27,7 @@ const controller = require('../controllers/voucherController');
 
 router.get('/gerarCodigoVoucher',controller.gerarCodigoVoucher);
 router.get('/buscarCodigo/:codVoucher/:codOrigem/:idLoja?', controller.buscarVoucherCodigo);
-router.get('/buscarIntervalo/:datInicioBusca/:datFimBusca/:codOrigem/:idLoja?', controller.buscarVoucherIntervalo);
+router.get('/buscarCliente/:idCliente/:codOrigem/:idLoja?', controller.buscarVoucherCliente);
 
 router.get('/listar/:codOrigem/:idLoja?', controller.listar);
 router.get('/:idDesconto', controller.obter);

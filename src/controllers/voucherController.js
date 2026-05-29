@@ -128,33 +128,29 @@ exports.buscarVoucherCliente = async (req, res) => {
         const { idCliente, codOrigem, idLoja } = req.params;
 
         let desconto;
+
+
         if (codOrigem == "P") { // Plataforma
 
 
             desconto = await db('desconto')
                 .where ('codNatureza','V')
-                .where ('idCliente','=' )
-                .where(function() {
-                    // Primeiro grupo: Data1 entre DataI e DataF
-                    this.whereBetween('datInicioValidade', [datInicioBusca, datFimBusca])
-                    // Segundo grupo conectado por OU: Data2 entre DataI e DataF
-                    .orWhereBetween('datFimValidade', [datInicioBusca, datFimBusca]);
-                })
-                .andWhere(function() {
-                    this.where('CodOrigem', 'P');
-                });
+                .andWhere ('idCliente',idCliente )
+                .andWhere ('CodOrigem', 'P')              
+                ;
         } else if (codOrigem == "L") { // Loja
             desconto = await db('desconto')
-                .where(function() {
-                    // Primeiro grupo: Data1 entre DataI e DataF
-                    this.whereBetween('datInicioValidade', [datInicioBusca, datFimBusca])
-                    // Segundo grupo conectado por OU: Data2 entre DataI e DataF
-                    .orWhereBetween('datFimValidade', [datInicioBusca, datFimBusca]);
-                })
+                .where ('codNatureza','V')
+                .where ('idCliente','=',idCliente )
+                
                 .andWhere(function() {
                     this.where('CodOrigem', 'L')
                     .andWhere('idLoja', idLoja);
                 });
+        } else if (codOrigem == "C") { // Loja
+            desconto = await db('desconto')
+                .where ('codNatureza','V')
+                .where ('idCliente','=',idCliente )
         }
 
         if (!desconto) {
