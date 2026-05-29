@@ -1,10 +1,3 @@
-// Define que o ID só pode ter números e letras maiúsculas
-const alfabeto = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const gerarIdCustomizado = customAlphabet(alfabeto, 12); // Tamanho 12
-
-const idCupom = gerarIdCustomizado();
-console.log('ID Personalizado:', idCupom);
-
 const API_URL = "http://localhost:3000/cupom";
 
 
