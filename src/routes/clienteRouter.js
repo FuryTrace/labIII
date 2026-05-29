@@ -26,7 +26,7 @@ const controller = require('../controllers/clienteController');
 */
 
 router.get('/listar', controller.listar);
-router.get('/:idCliente', controller.obter);
+router.get('/obter/:idCliente', controller.obter);
 
 
 /* module.exports é uma propriedade do Node.js que define o que um módulo JavaScript exporta 

@@ -10,10 +10,13 @@ const clientes = [
 
 
 function obtemListaClientes () {
-    return  JSON.parse(clientes);
+  
+
+    return  JSON.stringify(clientes);
 }
 
-// Método de Consulta através do ID
+// Função que Simula retornar os dados de um Cliente.
+// Teria que ser revisto em um implementação Real.
 
 exports.obter = async (req, res) => {
     try {
@@ -36,14 +39,15 @@ exports.obter = async (req, res) => {
 };
 
 
-// Método de Listar todos os cupons com até 1 ano de idade
+// Função que Simula a Leitura de uma tabela de Clientes.
+// Teria que ser revisto em um implementação Real.
 
 exports.listar = async (req, res) => {
 
 
   try {
-
-        res.json(obtemListaClientes);
+        const listaDeClientes = JSON.parse(obtemListaClientes());
+        res.json(listaDeClientes);
     } catch (err) {
         res.status(500).json({ erro: 'Erro ao listar os Clientes' });
     }

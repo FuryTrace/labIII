@@ -46,6 +46,8 @@
                         <thead class="text-muted">
                             <tr>
                                 <th class="fw-normal pb-3 border-bottom">Origem</th>
+                                <th class="fw-normal pb-3 border-bottom">Cliente</th>
+
                                 <th class="fw-normal pb-3 border-bottom">Código</th>
                                 <th class="fw-normal pb-3 border-bottom">Tipo de Desconto</th>
                                 <th class="fw-normal pb-3 border-bottom">Período</th>
@@ -128,11 +130,14 @@
                     <select class="form-select" id="inputCmbCliente">
                         <option selected value="">Clique para escolher...</option>
                     </select>
+                    <input type="text" class="form-control" id="inputCliente" hidden disabled>
                 </div>
+
+
 
                 <div class="col-md-9">
                     <label for="inputCodigo" class="form-label">Código</label>
-                    <input type="text" class="form-control" id="inputCodigo"  placeholder="Código do Voucher">
+                    <input type="text" class="form-control" id="inputCodigo"  placeholder="Código do Voucher" disabled>
                 </div>
                 <div class="col-md-9">
                     <label for="inputObservacao" class="form-label">Observação/Motivo da Criação do Voucher</label>

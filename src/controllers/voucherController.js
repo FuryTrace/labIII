@@ -216,7 +216,7 @@ exports.inserir = async (req, res) => {
 
     gerarId()
 
-    const { codDesconto,codNatureza,codOrigem,codTipo,valDesconto,perDesconto,datInicioValidade,datFimValidade,obsDesconto,idLoja,idUsuarioCriacao,nomUsuarioCriacao,datCriacao } = req.body;
+    const { codDesconto,codNatureza,codOrigem,codTipo,valDesconto,perDesconto,datInicioValidade,datFimValidade,obsDesconto,idLoja,idCliente,idUsuarioCriacao,nomUsuarioCriacao,datCriacao } = req.body;
       
     const desconto = await db("desconto").where( 'codDesconto','=',  codDesconto).first();
     if (desconto) {
@@ -232,6 +232,7 @@ exports.inserir = async (req, res) => {
       datInicioValidade : datInicioValidade,
       datFimValidade: datFimValidade,
       obsDesconto : obsDesconto,
+      idCliente: idCliente,
       indAtivo : 1,
       idUsuarioCriacao:idUsuarioCriacao,
       nomUsuarioCriacao: nomUsuarioCriacao,

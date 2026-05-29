@@ -95,6 +95,15 @@ const descontoRoutes = require('./routes/descontoRouter');
 app.use('/desconto', descontoRoutes);
 
 
+// Inclui as Funções de CRUD definidas em /routes/voucherRouter:
+const clienteRoutes = require('./routes/clienteRouter');
+
+app.use('/cliente', clienteRoutes);
+
+
+
+
+
 
 
 

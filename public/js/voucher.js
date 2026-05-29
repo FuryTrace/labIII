@@ -1,7 +1,114 @@
 const API_URL = "http://localhost:3000/voucher";
 
+const API_URL_CLIENTE = "http://localhost:3000/cliente";
+
+// Função Obtem a Lista de Clientes cadastrados.
+
+async function obterListaDeCliente() {
+    const url = `${API_URL_CLIENTE}/listar`;
+
+    try {
+        const res = await fetch(url);
+
+        // Verifica se a API respondeu com status de sucesso (200-299)
+        if (!res.ok) {
+            throw new Error(`Erro na requisição: Status ${res.status}`);
+        }
+
+        // Converte para JSON
+        const clientes = await res.json();
+        return clientes;
+
+    } catch (erro) {
+        console.error("Falha ao obter lista de clientes:", erro);
+        // Retorna um array vazio para evitar que o forEach da próxima função quebre
+        return []; 
+    }
+}
+
+// Carrega o Combo de Cliente do Formulário de Criação de Voucher
+
+async function carregarComboClienteFormularioCriarVoucher() {
+    const clientes = await obterListaDeCliente();
+ 
+
+    const select = document.getElementById('inputCmbCliente');
+    
+    // Garantia: Se o elemento não existir no HTML, o código não quebra
+    if (!select) {
+        console.error("Elemento 'inputCmbCliente' não foi encontrado na página.");
+        return;
+    }
+
+    // Limpa opções antigas (evita duplicar caso a função rode mais de uma vez)
+    select.innerHTML = '<option value="">Selecione um cliente...</option>';
+
+    // Usando um Fragment para atualizar o HTML de uma vez só (Melhor performance)
+    const fragmento = document.createDocumentFragment();
+
+    clientes.forEach((cliente) => {
+        const novaOpcao = document.createElement('option');
+        novaOpcao.value = cliente.idCliente;
+        novaOpcao.textContent = cliente.nome;
+        
+        fragmento.appendChild(novaOpcao);
+    });
+
+    // Adiciona todos os clientes no select de uma só vez
+    select.appendChild(fragmento);
+}
 
 
+// Carrega o Combo de Cliente do Formulário Formulário Principal
+
+async function carregarComboClienteBusca() {
+    const clientes = await obterListaDeCliente();
+ 
+    const select = document.getElementById('inputCmbClienteBusca');
+    
+
+    // Limpa opções antigas (evita duplicar caso a função rode mais de uma vez)
+    select.innerHTML = '<option value="">Selecione um cliente...</option>';
+
+    // Usando um Fragment para atualizar o HTML de uma vez só (Melhor performance)
+    const fragmento = document.createDocumentFragment();
+
+    clientes.forEach((cliente) => {
+        const novaOpcao = document.createElement('option');
+        novaOpcao.value = cliente.idCliente;
+        novaOpcao.textContent = cliente.nome;
+        
+        fragmento.appendChild(novaOpcao);
+    });
+
+    // Adiciona todos os clientes no select de uma só vez
+    select.appendChild(fragmento);
+}
+
+
+async function obtemCliente (idCliente) {
+    const url = `${API_URL_CLIENTE}/obter/` + idCliente;
+
+    try {
+        const res = await fetch(url);
+
+        // Verifica se a API respondeu com status de sucesso (200-299)
+        if (!res.ok) {
+            throw new Error(`Erro na requisição: Status ${res.status}`);
+        }
+
+        // Converte para JSON
+        const clientes = await res.json();
+
+        return clientes;
+
+    } catch (erro) {
+        console.error("Falha ao obter lista de clientes:", erro);
+        // Retorna um array vazio para evitar que o forEach da próxima função quebre
+        return []; 
+    }
+
+}
 
 
 
@@ -31,17 +138,26 @@ async function listarVoucher() {
     tabela.innerHTML = "";
 
     // Adiciona uma Linha de Vouchers
-    vouchers.forEach(voucher => {
+    for (const voucher of vouchers) {
+    //vouchers.forEach(voucher => {
         const row = document.createElement("tr");
         const origemVoucher = (voucher.codOrigem == "P") ? "Plataforma" : "Loja";
+
+        const cliente = await obtemCliente(voucher.idCliente);
+
+
         const tipoVoucher = (voucher.codTipo == "V") ? "Valor"
                         : (voucher.codTipo == "P") ? "Percentual"
                         : "";
+
+
+    
         const periodoValidade = (new Date (voucher.datInicioValidade)).toLocaleString("pt-BR") +"<br>"+(new Date (voucher.datFimValidade)).toLocaleString("pt-BR");
 
         const situacao = (voucher.indAtivo == 1 ) ? "Ativo" : "Inativo";
         row.innerHTML = `
             <td>${origemVoucher}</td>
+            <td>${cliente.nome}</td>
             <td>${voucher.codDesconto}</td>
             <td>${tipoVoucher}</td>
             <td>${periodoValidade}</td>
@@ -52,7 +168,7 @@ async function listarVoucher() {
             </td>
         `;
         tabela.appendChild(row);
-    });
+    };
 }
 
 
@@ -191,6 +307,7 @@ async function salvarVoucher(e) {
                     datInicioValidade : datInicioValidade.toLocaleString('pt-BR'),
                     datFimValidade: datFimValidade,
                     obsDesconto : document.getElementById("inputObservacao").value,
+                    idCliente: document.getElementById("inputCmbCliente").value,
                     indAtivo : 1,
                     idUsuarioCriacao: idUsuarioLogado,
                     
@@ -267,6 +384,13 @@ async function consultarVoucher(idDesconto) {
     document.getElementById("inputValor").value = voucher.valDesconto;
     document.getElementById("inputPercentual").value = voucher.perDesconto;
 
+    const cliente = await obtemCliente(voucher.idCliente);
+
+    document.getElementById("inputCliente").value = cliente.nome;
+
+
+
+
     document.getElementById("inputDataInicio").value = voucher.datInicioValidade.toLocaleString('pt-BR').replace(' ', 'T').substring(0, 16);
     document.getElementById("inputDataFim").value = voucher.datFimValidade.toLocaleString('pt-BR').replace(' ', 'T').substring(0, 16);
     document.getElementById("inputObservacao").value = voucher.obsDesconto;
@@ -341,7 +465,14 @@ function prepararFormularioVisualizarVoucher() {
 
 
     // Desabilita os campos de edição da tela
-    document.getElementById("inputCodigo").disabled = true;
+    //document.getElementById("inputCodigo").disabled = true;
+
+    // Esconde o Combo e Exibe o Input
+    document.getElementById("inputCmbCliente").hidden = true;
+    document.getElementById("inputCliente").hidden = false;
+    
+
+
     document.getElementById("inlineRadioPercentual").disabled = true;
     document.getElementById("inlineRadioValor").disabled = true;
     
@@ -363,7 +494,14 @@ function prepararFormularioCriarVoucher() {
 
     // Habilita os campos de edição da tela
 
-    document.getElementById("inputCodigo").disabled = false;
+    // Campo de Código é gerado automaticamente.
+    // document.getElementById("inputCodigo").disabled = false;
+
+    // Exibe o Combo e Esconde o Input
+    document.getElementById("inputCmbCliente").hidden = false;
+    document.getElementById("inputCliente").hidden = true;
+
+
     document.getElementById("inlineRadioPercentual").disabled = false;
     document.getElementById("inlineRadioValor").disabled = false;
     
@@ -418,6 +556,10 @@ function limparCamposFormulario() {
     document.getElementById("inlineRadioLoja").checked = false;
     document.getElementById("inlineRadioPlataforma").checked = false;
     
+    document.getElementById("inputCmbCliente").value = "";
+    document.getElementById("inputCliente").value = "";
+
+
     document.getElementById("inputCodigo").value = "";
     document.getElementById("inlineRadioPercentual").checked = false;
     document.getElementById("inlineRadioValor").checked = false;
@@ -458,9 +600,9 @@ async function geraIdVoucher() {
     const res = await fetch(url, { method: "GET" });
 
     const voucher = await res.json();
-   
 
     document.getElementById("inputCodigo").value = voucher.codDesconto;
+  
 
 }
 
@@ -475,6 +617,7 @@ async function novoVoucher() {
 
     
     await geraIdVoucher();
+    await  carregarComboClienteFormularioCriarVoucher();
 
     selecionarOrigem( obtemOrigemUsuarioLogado());
     exibirFormulario();
@@ -490,6 +633,16 @@ function criticaVoucher() {
         alert("É obrigatório identificar se é um voucher de loja ou de plataforma.");
         return false;
     }
+
+    // Verifica se o Cliente foi Informado
+
+        
+    if (document.getElementById("inputCmbCliente").value == "") {
+        alert("É obrigatório selecionar um cliente para criar o Voucher.");
+        return false;
+    }
+
+
 
 
     // Verifica se o código foi Informado
@@ -530,8 +683,6 @@ function criticaVoucher() {
             return false;
         }
 
-
-
     }
     
     // Voucher do tipo Valor
@@ -545,10 +696,13 @@ function criticaVoucher() {
             alert("É obrigatório informar um valor para vouchers do tipo valor.");
             return false;
         }
+
+        /* Voucher não tem limite de Valor.
         if (valor > 20) {
             alert("O valor do voucher não pode exceder os R$ 20,00.");
             return false;
         }
+        */
     }
 
     // Verificando as Datas de Início e de Fim
@@ -602,7 +756,9 @@ function exibeUsuarioLogado() {
     const usuarioLogado = obterUsuarioLogado();
     if (usuarioLogado.tipo == "Loja") {
         document.getElementById("lblUsuario").textContent = usuarioLogado.tipo+" "+usuarioLogado.idLoja +": "+usuarioLogado.nome;
-    } else {
+    } else if (usuarioLogado.tipo == "Cliente") {
+        document.getElementById("lblUsuario").textContent = usuarioLogado.tipo+" "+usuarioLogado.idCliente +": "+usuarioLogado.nome;
+    } {
         document.getElementById("lblUsuario").textContent = usuarioLogado.tipo +": "+usuarioLogado.nome;
     }
 
@@ -616,7 +772,9 @@ function obtemOrigemUsuarioLogado() {
         return "L";
     } else if (usuarioLogado.tipo == "Plataforma") {
         return "P";
-    } else {
+    } else if (usuarioLogado.tipo == "Cliente") {
+        return "C";
+    } else{
         alert("Usuário de tipo não autorizado: "+usuarioLogado.tipo);
         return "";
     }
@@ -637,6 +795,12 @@ function obtemIdLojaUsuarioLogado() {
     return usuarioLogado.idLoja;
 }
 
+function obtemIdClienteUsuarioLogado() {
+    const usuarioLogado = obterUsuarioLogado();
+    return usuarioLogado.idCliente;
+}
+
+
 function obtemRotaUsuarioLogado() {
     const usuarioLogado = obterUsuarioLogado();
   
@@ -644,7 +808,9 @@ function obtemRotaUsuarioLogado() {
         return "/P/0";
     } else if (usuarioLogado.tipo == "Loja") { // Loja
         return "/L/"+usuarioLogado.idLoja;
-    } else {
+    } else if (usuarioLogado.tipo == "Cliente") { // Loja
+        return "/C/"+usuarioLogado.idCliente;
+    }{
         return "";
     }
 }
@@ -663,7 +829,9 @@ function diferencaEmDias(dataInicial, dataFinal) {
 
 //document.getElementById("clienteForm").addEventListener("submit", salvarCliente);
 listarVoucher();
+carregarComboClienteBusca();
 exibeUsuarioLogado();
+
 
 
  
