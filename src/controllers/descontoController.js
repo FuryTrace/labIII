@@ -14,20 +14,48 @@ const db = require('../db/knex');
 
 exports.validar = async (req, res) => {
     try {
-      const { codDesconto } = req.params;
-      if (codDesconto === null || codDesconto === undefined || codDesconto.trim() === "") {
-          return res.status(400).json({ erro: "Código do Desconto inválido" });
+        const { codDesconto } = req.params;
+        if (codDesconto === null || codDesconto === undefined || codDesconto.trim() === "") {
+            return res.status(400).json({ erro: "Código do Desconto inválido" });
 
-      }
+        }
 
 
-      const desconto = await db("desconto").where({ codDesconto: codDesconto }).first();
-      if (!desconto) {
-        return res.status(404).json({ erro: "Desconto não encontrado" });
-      }
-      res.json(desconto);
+        const desconto = await db("desconto").where({ codDesconto: codDesconto }).first();
+        if (!desconto) {
+            
+            return res.status(404).json({ erro: "Desconto não encontrado" });
+        }
+        // Obtem o somatório e qtd de uso do Desconto
+
+        const idDesconto = desconto.idDesconto;
+
+        const descontoPedido = await db("descontopedido")
+                                    .sum('valDesconto as totDesconto')
+                                    .count('* as qtdDesconto')
+                                    .where('idDesconto',idDesconto)
+                                    .first();
+
+        // se encontrou valores, então adiciona ao registro do Desconto. 
+                                
+        if (descontoPedido) {
+            const { totDesconto, qtdDesconto } = descontoPedido;
+            if (totDesconto) {  // Trata a cláusula Sum
+                desconto.valDescontoUtilizado = totDesconto;
+                desconto.qtdDescontoUtilizado = qtdDesconto;
+
+            } else {
+                desconto.valDescontoUtilizado = 0;
+                desconto.qtdDescontoUtilizado = qtdDesconto;
+            }
+        } else {
+            desconto.valDescontoUtilizado = 0;
+            desconto.qtdDescontoUtilizado = 0;
+        }
+
+        res.json(desconto);
     } catch (error) {
-      res.status(500).json({ erro: "Erro ao buscar o Desconto" });
+        res.status(500).json({ erro: "Erro ao buscar o Desconto" });
     }
 };
 

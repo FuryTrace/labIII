@@ -29,7 +29,7 @@ router.get('/gerarCodigoVoucher',controller.gerarCodigoVoucher);
 router.get('/buscarCodigo/:codVoucher/:codOrigem/:idLoja?', controller.buscarVoucherCodigo);
 router.get('/buscarCliente/:idCliente/:codOrigem/:idLoja?', controller.buscarVoucherCliente);
 
-router.get('/listar/:codOrigem/:idLoja?', controller.listar);
+router.get('/listar/:codOrigem/:idLojaCliente?', controller.listar);
 router.get('/:idDesconto', controller.obter);
 
 router.post('/', controller.inserir);

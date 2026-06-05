@@ -131,8 +131,6 @@ exports.buscarVoucherCliente = async (req, res) => {
 
 
         if (codOrigem == "P") { // Plataforma
-
-
             desconto = await db('desconto')
                 .where ('codNatureza','V')
                 .andWhere ('idCliente',idCliente )
@@ -147,7 +145,7 @@ exports.buscarVoucherCliente = async (req, res) => {
                     this.where('CodOrigem', 'L')
                     .andWhere('idLoja', idLoja);
                 });
-        } else if (codOrigem == "C") { // Loja
+        } else if (codOrigem == "C") { // Cliente
             desconto = await db('desconto')
                 .where ('codNatureza','V')
                 .where ('idCliente','=',idCliente )
@@ -166,15 +164,13 @@ exports.buscarVoucherCliente = async (req, res) => {
 // Método de Listar todos os vouchers com até 1 ano de idade
 
 exports.listar = async (req, res) => {
-
-
    
     // Obtem a Data de Um Ano Atrás
     const umAnoAtras = new Date();
     umAnoAtras.setFullYear(umAnoAtras.getFullYear() - 1);
     // where( 'datInicioValidade','>',  umAnoAtras )
 
-    const { codOrigem, idLoja  } = req.params;
+    const { codOrigem, idLojaCliente  } = req.params;
     let desconto;
 
   try {
@@ -190,9 +186,14 @@ exports.listar = async (req, res) => {
             desconto = desconto = await db('desconto')
                     .where ('codNatureza','V')
                     .where( 'datInicioValidade','>',  umAnoAtras )
-                            .where ('codOrigem','L')
-                            .where('idLoja',idLoja)
-                            .orderBy('datInicioValidade');
+                    .where ('codOrigem','L')
+                    .where('idLoja',idLojaCliente)
+                    .orderBy('datInicioValidade');
+        } else if (codOrigem == "C") { // Cliente
+            desconto = desconto = await db('desconto')
+                    .where ('codNatureza','V')
+                    .where('idCliente',idLojaCliente)
+                    .orderBy('datInicioValidade');
         }
         if (!desconto) {
             res.status(404).jason({erro : "Não foram encontrados registros"});

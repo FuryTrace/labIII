@@ -124,6 +124,8 @@ async function obtemCliente (idCliente) {
 async function listarVoucher() {
     // Lista os Vouchers
 
+    const codOrigemUsuarioLogado = obtemOrigemUsuarioLogado();
+
     const rotaUsuarioLogado = obtemRotaUsuarioLogado();
 
     const url = `${API_URL}/listar`+rotaUsuarioLogado;
@@ -155,6 +157,14 @@ async function listarVoucher() {
         const periodoValidade = (new Date (voucher.datInicioValidade)).toLocaleString("pt-BR") +"<br>"+(new Date (voucher.datFimValidade)).toLocaleString("pt-BR");
 
         const situacao = (voucher.indAtivo == 1 ) ? "Ativo" : "Inativo";
+
+        // Se o usuário Logado for um Cliente, enão não exibe a ação de Exclusão
+        const acao = `<button onclick="consultarVoucher(${voucher.idDesconto})">👁️</button>` +
+                    ((codOrigemUsuarioLogado == "C" ) ? "" :
+                    `<button onclick="inativarVoucher(${voucher.idDesconto},${voucher.indAtivo})">❌</button>`);
+
+        console.log(acao);            
+
         row.innerHTML = `
             <td>${origemVoucher}</td>
             <td>${cliente.nome}</td>
@@ -163,12 +173,18 @@ async function listarVoucher() {
             <td>${periodoValidade}</td>
             <td>${situacao}</td>
             <td class="actions">
-            <button onclick="consultarVoucher(${voucher.idDesconto})">👁️</button>
-            <button onclick="inativarVoucher(${voucher.idDesconto},${voucher.indAtivo})">❌</button>
-            </td>
+            <button onclick="consultarVoucher(${voucher.idDesconto})">👁️</button>` +
+
+            ((codOrigemUsuarioLogado == "C" ) ? "" :
+                    `   <button onclick="inativarVoucher(${voucher.idDesconto},${voucher.indAtivo})">❌</button>`) +
+          
+            `</td>
         `;
         tabela.appendChild(row);
     };
+            // <button onclick="consultarVoucher(${voucher.idDesconto})">👁️</button>
+            // <button onclick="inativarVoucher(${voucher.idDesconto},${voucher.indAtivo})">❌</button>
+
 }
 
 
@@ -724,8 +740,8 @@ function criticaVoucher() {
     const diferencaMs = new Date(dataFim) - new Date(dataInicio); // Obtem a dirença em dias em Milisegundos
 
     const diferencaEmDias = Math.floor(diferencaMs / msPorDia); // Calcula a direença em dias.
-    if (diferencaEmDias > 60) {
-        alert("O período não pode ser superior a 60 dias.");
+    if (diferencaEmDias > 365) {
+        alert("O período não pode ser superior a 365 dias.");
         return false;
     }
    
@@ -804,6 +820,25 @@ function obtemRotaUsuarioLogado() {
     }
 }
 
+// Função que esconde o Combo de seleção de Cliente se o usuário Logado for um cliente
+
+function exibeComboBuscaCliente(codOrigemUsuarioLogado) {
+
+    if (codOrigemUsuarioLogado == "C") { // Se for um Cliente
+        document.getElementById("divCmbClienteBusca").hidden = true;
+        document.getElementById("divBtnCriarVoucher").hidden = true;
+        
+        return false;
+
+    } else { // Se for Loja ou Plataforma
+        document.getElementById("divCmbClienteBusca").hidden = false;
+        document.getElementById("divBtnCriarVoucher").hidden = false;
+        return true;
+    }
+  
+}
+
+
 // Função gerada pelo Gemini
 // Calcula a diferença em dias para duas datas
 
@@ -818,7 +853,10 @@ function diferencaEmDias(dataInicial, dataFinal) {
 
 //document.getElementById("clienteForm").addEventListener("submit", salvarCliente);
 listarVoucher();
-carregarComboClienteBusca();
+if (exibeComboBuscaCliente(obtemOrigemUsuarioLogado())) {
+    carregarComboClienteBusca() ;
+}
+
 exibeUsuarioLogado();
 
 
