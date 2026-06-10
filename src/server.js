@@ -100,15 +100,6 @@ const clienteRoutes = require('./routes/clienteRouter');
 
 app.use('/cliente', clienteRoutes);
 
-
-
-
-
-
-
-
-
-
 /* Define o destino padrão do site como sendo public/index.html
 
 */
